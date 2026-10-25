@@ -8,6 +8,8 @@ class MockEventRepository implements EventRepository {
   List<EventModel> eventsToReturn = [];
   Exception? exceptionToThrow;
   Duration delay = Duration.zero;
+  String? lastPassedCategory;
+  String? lastPassedQuery;
 
   @override
   Future<EventListResponse> getEvents({
@@ -17,6 +19,8 @@ class MockEventRepository implements EventRepository {
     int page = 1,
     int limit = 50,
   }) async {
+    lastPassedQuery = query;
+    lastPassedCategory = category;
     if (delay > Duration.zero) {
       await Future.delayed(delay);
     }
@@ -62,6 +66,10 @@ void main() {
   setUp(() {
     mockRepository = MockEventRepository();
     provider = EventListProvider(repository: mockRepository);
+  });
+
+  tearDown(() {
+    provider.dispose();
   });
 
   group('EventListProvider Tests', () {
@@ -121,6 +129,50 @@ void main() {
       expect(provider.events.first.id, 'evt-2');
       expect(provider.events.first.title, 'Newer Event');
     });
+
+    test('fetches and populates categories', () async {
+      await provider.fetchCategories();
+      expect(provider.categories, ['Workshop', 'Sosyal']);
+    });
+
+    test('category selection triggers event fetch with category parameter', () async {
+      provider.setCategory('Workshop');
+      await Future.delayed(Duration.zero);
+
+      expect(provider.selectedCategory, 'Workshop');
+      expect(mockRepository.lastPassedCategory, 'Workshop');
+
+      // Selecting 'Tümü' passes null to repository
+      provider.setCategory('Tümü');
+      await Future.delayed(Duration.zero);
+      expect(provider.selectedCategory, isNull);
+      expect(mockRepository.lastPassedCategory, isNull);
+    });
+
+    test('onSearchChanged debounces input before querying repository', () async {
+      mockRepository.eventsToReturn = [sampleEvent];
+
+      provider.onSearchChanged('flut', debounceDuration: const Duration(milliseconds: 50));
+      // Immediately before debounce fires
+      expect(provider.searchQuery, '');
+
+      // Wait for debounce timer to fire
+      await Future.delayed(const Duration(milliseconds: 60));
+      expect(provider.searchQuery, 'flut');
+      expect(mockRepository.lastPassedQuery, 'flut');
+    });
+
+    test('clearFilters resets search and category and refetches', () async {
+      provider.setCategory('Sosyal');
+      provider.setSearchQuery('kahvaltı');
+
+      expect(provider.isFiltering, true);
+
+      provider.clearFilters();
+
+      expect(provider.searchQuery, '');
+      expect(provider.selectedCategory, isNull);
+      expect(provider.isFiltering, false);
+    });
   });
 }
-

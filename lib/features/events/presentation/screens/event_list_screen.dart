@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../providers/event_list_provider.dart';
+import '../widgets/category_chips.dart';
 import '../widgets/event_list_tile.dart';
+import '../widgets/search_field.dart';
 import '../widgets/state_views.dart';
 import 'event_detail_screen.dart';
 
@@ -17,9 +19,11 @@ class _EventListScreenState extends State<EventListScreen> {
   @override
   void initState() {
     super.initState();
-    // Fetch events automatically on first screen build
+    // Fetch events and categories on screen mount
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<EventListProvider>().fetchEvents();
+      final provider = context.read<EventListProvider>();
+      provider.fetchCategories();
+      provider.fetchEvents();
     });
   }
 
@@ -41,53 +45,87 @@ class _EventListScreenState extends State<EventListScreen> {
       ),
       body: Consumer<EventListProvider>(
         builder: (context, provider, child) {
-          if (provider.isLoading) {
-            return const LoadingView(
-              message: 'Etkinlikler yükleniyor...',
-            );
-          }
+          return Column(
+            children: [
+              // Search input with debounce
+              SearchField(
+                onChanged: provider.onSearchChanged,
+                onClear: provider.clearSearch,
+              ),
 
-          if (provider.hasError) {
-            return ErrorView(
-              message: provider.errorMessage ?? 'Bir hata meydana geldi.',
-              onRetry: provider.retry,
-            );
-          }
+              // Categories row
+              CategoryChips(
+                categories: provider.categories,
+                selectedCategory: provider.selectedCategory,
+                onCategorySelected: provider.setCategory,
+              ),
 
-          if (provider.isEmpty) {
-            return EmptyView(
-              title: 'Henüz Etkinlik Yok',
-              message: 'Şu anda listelenecek bir etkinlik bulunamadı.',
-              onAction: provider.retry,
-              actionButtonText: 'Yenile',
-            );
-          }
+              const SizedBox(height: 8),
 
-          final events = provider.events;
+              // List / State views area
+              Expanded(
+                child: _buildContent(context, provider),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
 
-          return RefreshIndicator(
-            onRefresh: () => provider.fetchEvents(isRefresh: true),
-            child: ListView.builder(
-              padding: const EdgeInsets.symmetric(vertical: 8),
-              itemCount: events.length,
-              itemBuilder: (context, index) {
-                final event = events[index];
-                return EventListTile(
-                  event: event,
-                  onTap: () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (_) => EventDetailScreen(initialEvent: event),
-                      ),
-                    );
-                  },
-                );
-              },
-            ),
+  Widget _buildContent(BuildContext context, EventListProvider provider) {
+    if (provider.isLoading) {
+      return const LoadingView(
+        message: 'Etkinlikler yükleniyor...',
+      );
+    }
+
+    if (provider.hasError) {
+      return ErrorView(
+        message: provider.errorMessage ?? 'Bir hata meydana geldi.',
+        onRetry: provider.retry,
+      );
+    }
+
+    if (provider.isEmpty) {
+      if (provider.isFiltering) {
+        return EmptyView(
+          title: 'Sonuç Bulunamadı',
+          message: 'Aramanızla veya seçtiğiniz kategoriyle eşleşen etkinlik bulunamadı.',
+          icon: Icons.search_off_rounded,
+          onAction: provider.clearFilters,
+          actionButtonText: 'Filtreleri Temizle',
+        );
+      }
+      return EmptyView(
+        title: 'Henüz Etkinlik Yok',
+        message: 'Şu anda listelenecek bir etkinlik bulunamadı.',
+        onAction: provider.retry,
+        actionButtonText: 'Yenile',
+      );
+    }
+
+    final events = provider.events;
+
+    return RefreshIndicator(
+      onRefresh: () => provider.fetchEvents(isRefresh: true),
+      child: ListView.builder(
+        padding: const EdgeInsets.only(top: 4, bottom: 16),
+        itemCount: events.length,
+        itemBuilder: (context, index) {
+          final event = events[index];
+          return EventListTile(
+            event: event,
+            onTap: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => EventDetailScreen(initialEvent: event),
+                ),
+              );
+            },
           );
         },
       ),
     );
   }
 }
-

@@ -14,15 +14,19 @@ enum EventListStatus {
 }
 
 /// Manages state for the event discovery list screen, including
+/// categories, searching with debounce, category filtering,
 /// loading, error, empty states, and stale response protection.
 class EventListProvider extends ChangeNotifier {
   final EventRepository repository;
 
   EventListStatus _status = EventListStatus.initial;
   List<EventModel> _events = [];
+  List<String> _categories = [];
   String? _errorMessage;
   String? _selectedCategory;
   String _searchQuery = '';
+
+  Timer? _debounceTimer;
 
   /// Request counter to protect against stale/out-of-order network responses.
   int _latestRequestId = 0;
@@ -31,6 +35,7 @@ class EventListProvider extends ChangeNotifier {
 
   EventListStatus get status => _status;
   List<EventModel> get events => List.unmodifiable(_events);
+  List<String> get categories => List.unmodifiable(_categories);
   String? get errorMessage => _errorMessage;
   String? get selectedCategory => _selectedCategory;
   String get searchQuery => _searchQuery;
@@ -39,6 +44,24 @@ class EventListProvider extends ChangeNotifier {
   bool get hasError => _status == EventListStatus.error;
   bool get isEmpty => _status == EventListStatus.empty;
   bool get isSuccess => _status == EventListStatus.success;
+
+  bool get isFiltering =>
+      _searchQuery.isNotEmpty || (_selectedCategory != null && _selectedCategory != 'Tümü');
+
+  /// Fetches categories from `/categories`.
+  Future<void> fetchCategories() async {
+    try {
+      final list = await repository.getCategories();
+      _categories = list;
+      notifyListeners();
+    } catch (_) {
+      // Fallback categories if server fails, won't break the UI
+      if (_categories.isEmpty) {
+        _categories = ['Hackathon', 'Panel', 'Seminer', 'Sosyal', 'Workshop', 'Yarışma'];
+        notifyListeners();
+      }
+    }
+  }
 
   /// Fetches events from repository.
   /// Automatically drops responses if a newer request was dispatched while waiting.
@@ -52,9 +75,10 @@ class EventListProvider extends ChangeNotifier {
     }
 
     try {
+      final categoryParam = (_selectedCategory == 'Tümü') ? null : _selectedCategory;
       final response = await repository.getEvents(
         query: _searchQuery,
-        category: _selectedCategory,
+        category: categoryParam,
         limit: 50, // Phase 1 requirement: fetch all events
       );
 
@@ -88,17 +112,46 @@ class EventListProvider extends ChangeNotifier {
     fetchEvents();
   }
 
-  /// Sets category filter and refreshes the list.
+  /// Sets category filter and refreshes the list with stale response protection.
   void setCategory(String? category) {
-    if (_selectedCategory == category) return;
-    _selectedCategory = category;
+    final normalized = (category == 'Tümü' || category == null) ? null : category;
+    if (_selectedCategory == normalized) return;
+    _selectedCategory = normalized;
     fetchEvents();
   }
 
-  /// Sets search query and refreshes the list.
+  /// Sets search query directly and triggers fetch.
   void setSearchQuery(String query) {
     if (_searchQuery == query) return;
     _searchQuery = query;
     fetchEvents();
+  }
+
+  /// Handles search input with a debounce delay to avoid spamming the API.
+  void onSearchChanged(String query, {Duration debounceDuration = const Duration(milliseconds: 400)}) {
+    _debounceTimer?.cancel();
+    _debounceTimer = Timer(debounceDuration, () {
+      setSearchQuery(query);
+    });
+  }
+
+  /// Clears the search query immediately.
+  void clearSearch() {
+    _debounceTimer?.cancel();
+    setSearchQuery('');
+  }
+
+  /// Clears all filters (both search and category).
+  void clearFilters() {
+    _debounceTimer?.cancel();
+    _searchQuery = '';
+    _selectedCategory = null;
+    fetchEvents();
+  }
+
+  @override
+  void dispose() {
+    _debounceTimer?.cancel();
+    super.dispose();
   }
 }

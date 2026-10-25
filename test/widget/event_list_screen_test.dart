@@ -10,6 +10,8 @@ import 'package:etkinlik_kesif_uygulamasi/features/events/presentation/screens/e
 class MockEventRepository implements EventRepository {
   bool shouldFail = false;
   int fetchCount = 0;
+  String? lastQuery;
+  String? lastCategory;
 
   @override
   Future<EventListResponse> getEvents({
@@ -20,6 +22,8 @@ class MockEventRepository implements EventRepository {
     int limit = 50,
   }) async {
     fetchCount++;
+    lastQuery = query;
+    lastCategory = category;
     if (shouldFail) {
       throw const ServerSideException(message: 'Sunucu hatası oluştu');
     }
@@ -47,7 +51,7 @@ class MockEventRepository implements EventRepository {
   }
 
   @override
-  Future<List<String>> getCategories() async => ['Sosyal'];
+  Future<List<String>> getCategories() async => ['Sosyal', 'Workshop'];
 
   @override
   Future<EventModel> getEventDetail(String eventId) async {
@@ -75,7 +79,6 @@ void main() {
       ),
     );
 
-    // Initial pump and microtasks
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 100));
 
@@ -94,5 +97,37 @@ void main() {
     expect(find.text('Mobilab Tanışma'), findsOneWidget);
     expect(find.text('Bir Sorun Oluştu'), findsNothing);
   });
-}
 
+  testWidgets('EventListScreen renders search field and category chips',
+      (WidgetTester tester) async {
+    final mockRepo = MockEventRepository();
+    final provider = EventListProvider(repository: mockRepo);
+
+    await tester.pumpWidget(
+      MultiProvider(
+        providers: [
+          Provider<EventRepository>.value(value: mockRepo),
+          ChangeNotifierProvider<EventListProvider>.value(value: provider),
+        ],
+        child: const MaterialApp(
+          home: EventListScreen(),
+        ),
+      ),
+    );
+
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 100));
+
+    // Category chips rendered
+    expect(find.text('Tümü'), findsOneWidget);
+    expect(find.text('Sosyal'), findsWidgets);
+    expect(find.text('Workshop'), findsOneWidget);
+
+    // Tap 'Workshop' category
+    await tester.tap(find.text('Workshop'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 100));
+
+    expect(mockRepo.lastCategory, 'Workshop');
+  });
+}
