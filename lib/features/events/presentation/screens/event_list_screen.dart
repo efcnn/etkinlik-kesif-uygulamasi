@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../providers/event_list_provider.dart';
 import '../widgets/event_list_tile.dart';
 import '../widgets/state_views.dart';
+import 'event_detail_screen.dart';
 
 class EventListScreen extends StatefulWidget {
   const EventListScreen({super.key});
@@ -74,10 +75,9 @@ class _EventListScreenState extends State<EventListScreen> {
                 return EventListTile(
                   event: event,
                   onTap: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text('${event.title} seçildi.'),
-                        duration: const Duration(seconds: 1),
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => EventDetailScreen(initialEvent: event),
                       ),
                     );
                   },
@@ -90,3 +90,4 @@ class _EventListScreenState extends State<EventListScreen> {
     );
   }
 }
+
