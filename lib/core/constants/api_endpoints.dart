@@ -7,3 +7,4 @@ class ApiEndpoints {
 
   static String eventDetail(String id) => '$baseUrl/events/$id';
 }
+
