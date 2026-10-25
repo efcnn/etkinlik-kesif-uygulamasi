@@ -38,7 +38,7 @@ class EventDiscoveryApp extends StatelessWidget {
         ChangeNotifierProvider<FavoritesProvider>(
           create: (context) => FavoritesProvider(
             storage: context.read<FavoritesLocalStorage>(),
-          )..loadFavorites(),
+          ),
         ),
       ],
       child: MaterialApp(
