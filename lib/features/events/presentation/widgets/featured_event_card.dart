@@ -75,7 +75,10 @@ class FeaturedEventCard extends StatelessWidget {
                   // Date pill badge
                   Flexible(
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 6,
+                      ),
                       decoration: BoxDecoration(
                         color: Colors.black.withValues(alpha: 0.55),
                         borderRadius: BorderRadius.circular(16),
@@ -149,7 +152,10 @@ class FeaturedEventCard extends StatelessWidget {
                 children: [
                   // Category tag
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 3,
+                    ),
                     decoration: BoxDecoration(
                       color: AppColors.accentGreen.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(8),
@@ -231,4 +237,3 @@ class FeaturedEventCard extends StatelessWidget {
     );
   }
 }
-
