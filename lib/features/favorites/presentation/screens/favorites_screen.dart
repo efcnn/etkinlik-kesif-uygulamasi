@@ -29,20 +29,27 @@ class FavoritesScreen extends StatelessWidget {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Favorilerim',
-                            style: AppTypography.headingLarge,
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            'Kaydettiğin tüm özel etkinlikler',
-                            style: AppTypography.bodyMedium,
-                          ),
-                        ],
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Favorilerim',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: AppTypography.headingLarge,
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              'Kaydettiğin tüm özel etkinlikler',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: AppTypography.bodyMedium,
+                            ),
+                          ],
+                        ),
                       ),
+                      const SizedBox(width: 12),
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
                         decoration: BoxDecoration(

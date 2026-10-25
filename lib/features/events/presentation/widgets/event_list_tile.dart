@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../../core/utils/date_formatter.dart';
+import '../../../../shared/widgets/event_network_image.dart';
 import '../../data/models/event_model.dart';
 
 class EventListTile extends StatelessWidget {
@@ -44,31 +45,11 @@ class EventListTile extends StatelessWidget {
                 // Event thumbnail
                 ClipRRect(
                   borderRadius: BorderRadius.circular(16),
-                  child: Container(
-                    width: 86,
-                    height: 86,
-                    color: AppColors.surfaceLight,
-                    child: event.imageUrl.isNotEmpty
-                        ? Image.network(
-                            event.imageUrl,
-                            fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) =>
-                                const Icon(Icons.image_not_supported_outlined, color: AppColors.textMuted, size: 28),
-                            loadingBuilder: (context, child, loadingProgress) {
-                              if (loadingProgress == null) return child;
-                              return const Center(
-                                child: SizedBox(
-                                  width: 18,
-                                  height: 18,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                    color: AppColors.accentGreen,
-                                  ),
-                                ),
-                              );
-                            },
-                          )
-                        : const Icon(Icons.event, color: AppColors.textMuted, size: 32),
+                  child: EventNetworkImage(
+                    imageUrl: event.imageUrl,
+                    width: 84,
+                    height: 84,
+                    iconSize: 28,
                   ),
                 ),
                 const SizedBox(width: 14),
@@ -82,22 +63,27 @@ class EventListTile extends StatelessWidget {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                            decoration: BoxDecoration(
-                              color: AppColors.accentGreen.withValues(alpha: 0.15),
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: Text(
-                              event.category,
-                              style: const TextStyle(
-                                fontSize: 11,
-                                fontWeight: FontWeight.bold,
-                                color: AppColors.accentGreen,
+                          Flexible(
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                              decoration: BoxDecoration(
+                                color: AppColors.accentGreen.withValues(alpha: 0.15),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Text(
+                                event.category,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.bold,
+                                  color: AppColors.accentGreen,
+                                ),
                               ),
                             ),
                           ),
-                          if (onFavoriteToggle != null)
+                          if (onFavoriteToggle != null) ...[
+                            const SizedBox(width: 8),
                             GestureDetector(
                               onTap: onFavoriteToggle,
                               behavior: HitTestBehavior.opaque,
@@ -110,6 +96,7 @@ class EventListTile extends StatelessWidget {
                                 ),
                               ),
                             ),
+                          ],
                         ],
                       ),
                       const SizedBox(height: 6),
@@ -123,19 +110,25 @@ class EventListTile extends StatelessWidget {
                       ),
                       const SizedBox(height: 8),
 
-                      // Date & Location Row
+                      // Date & Location Row (overflow-safe)
                       Row(
                         children: [
                           const Icon(Icons.calendar_today_rounded, size: 12, color: AppColors.textMuted),
                           const SizedBox(width: 4),
-                          Text(
-                            DateFormatter.formatShortDate(event.startDate),
-                            style: AppTypography.labelSmall.copyWith(color: AppColors.textMuted),
+                          Flexible(
+                            flex: 2,
+                            child: Text(
+                              DateFormatter.formatShortDate(event.startDate),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: AppTypography.labelSmall.copyWith(color: AppColors.textMuted),
+                            ),
                           ),
-                          const SizedBox(width: 12),
+                          const SizedBox(width: 8),
                           const Icon(Icons.location_on_rounded, size: 13, color: AppColors.accentPurple),
                           const SizedBox(width: 3),
                           Expanded(
+                            flex: 3,
                             child: Text(
                               event.location,
                               maxLines: 1,

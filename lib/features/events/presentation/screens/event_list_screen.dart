@@ -9,6 +9,7 @@ import '../widgets/category_chips.dart';
 import '../widgets/event_list_tile.dart';
 import '../widgets/featured_event_card.dart';
 import '../widgets/search_field.dart';
+import '../widgets/skeleton_loading_view.dart';
 import '../widgets/state_views.dart';
 import 'event_detail_screen.dart';
 
@@ -48,20 +49,27 @@ class _EventListScreenState extends State<EventListScreen> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Etkinlikleri Keşfet',
-                            style: AppTypography.headingLarge,
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            'En güncel etkinlik ve atölyeler',
-                            style: AppTypography.bodyMedium,
-                          ),
-                        ],
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Etkinlikleri Keşfet',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: AppTypography.headingLarge,
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              'En güncel etkinlik ve atölyeler',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: AppTypography.bodyMedium,
+                            ),
+                          ],
+                        ),
                       ),
+                      const SizedBox(width: 12),
                       // Refresh circular icon button
                       Container(
                         width: 44,
@@ -115,9 +123,7 @@ class _EventListScreenState extends State<EventListScreen> {
 
   Widget _buildContent(BuildContext context, EventListProvider provider) {
     if (provider.isLoading) {
-      return const LoadingView(
-        message: 'Etkinlikler yükleniyor...',
-      );
+      return const EventSkeletonView();
     }
 
     if (provider.hasError) {
@@ -187,13 +193,22 @@ class _EventListScreenState extends State<EventListScreen> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
-                    'Öne Çıkanlar',
-                    style: AppTypography.headingMedium,
+                  Expanded(
+                    child: Text(
+                      'Öne Çıkanlar',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: AppTypography.headingMedium,
+                    ),
                   ),
-                  Text(
-                    '${featuredEvents.length} Etkinlik',
-                    style: AppTypography.labelSmall.copyWith(color: AppColors.accentGreen),
+                  const SizedBox(width: 8),
+                  Flexible(
+                    child: Text(
+                      '${featuredEvents.length} Etkinlik',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: AppTypography.labelSmall.copyWith(color: AppColors.accentGreen),
+                    ),
                   ),
                 ],
               ),
@@ -233,13 +248,22 @@ class _EventListScreenState extends State<EventListScreen> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
-                    'Tüm Etkinlikler',
-                    style: AppTypography.headingMedium,
+                  Expanded(
+                    child: Text(
+                      'Tüm Etkinlikler',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: AppTypography.headingMedium,
+                    ),
                   ),
-                  Text(
-                    'Toplam ${events.length}',
-                    style: AppTypography.labelSmall.copyWith(color: AppColors.textMuted),
+                  const SizedBox(width: 8),
+                  Flexible(
+                    child: Text(
+                      'Toplam ${events.length}',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: AppTypography.labelSmall.copyWith(color: AppColors.textMuted),
+                    ),
                   ),
                 ],
               ),

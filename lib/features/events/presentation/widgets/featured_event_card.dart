@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../../core/utils/date_formatter.dart';
+import '../../../../shared/widgets/event_network_image.dart';
 import '../../data/models/event_model.dart';
 
 /// Large card for the horizontal carousel matching the Dribbble design reference.
@@ -25,7 +26,7 @@ class FeaturedEventCard extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        width: 280,
+        width: 270,
         margin: const EdgeInsets.only(right: 16),
         decoration: BoxDecoration(
           color: AppColors.surface,
@@ -42,40 +43,11 @@ class FeaturedEventCard extends StatelessWidget {
         child: Stack(
           fit: StackFit.expand,
           children: [
-            // Background Image
-            event.imageUrl.isNotEmpty
-                ? Image.network(
-                    event.imageUrl,
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) => Container(
-                      color: AppColors.surfaceLight,
-                      child: const Center(
-                        child: Icon(Icons.image_not_supported_outlined, color: AppColors.textMuted, size: 40),
-                      ),
-                    ),
-                    loadingBuilder: (context, child, progress) {
-                      if (progress == null) return child;
-                      return Container(
-                        color: AppColors.surfaceLight,
-                        child: const Center(
-                          child: SizedBox(
-                            width: 24,
-                            height: 24,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              color: AppColors.accentGreen,
-                            ),
-                          ),
-                        ),
-                      );
-                    },
-                  )
-                : Container(
-                    color: AppColors.surfaceLight,
-                    child: const Center(
-                      child: Icon(Icons.event, color: AppColors.textMuted, size: 48),
-                    ),
-                  ),
+            // Background Image with fallback
+            EventNetworkImage(
+              imageUrl: event.imageUrl,
+              iconSize: 48,
+            ),
 
             // Gradient Overlay for Readability
             Container(
@@ -93,36 +65,44 @@ class FeaturedEventCard extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   // Date pill badge
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                    decoration: BoxDecoration(
-                      color: Colors.black.withValues(alpha: 0.55),
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(
-                        color: Colors.white.withValues(alpha: 0.15),
-                        width: 0.8,
+                  Flexible(
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withValues(alpha: 0.55),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.15),
+                          width: 0.8,
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(
+                            Icons.calendar_month_outlined,
+                            size: 13,
+                            color: AppColors.accentGreen,
+                          ),
+                          const SizedBox(width: 5),
+                          Flexible(
+                            child: Text(
+                              DateFormatter.formatShortDate(event.startDate),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(
-                          Icons.calendar_month_outlined,
-                          size: 13,
-                          color: AppColors.accentGreen,
-                        ),
-                        const SizedBox(width: 5),
-                        Text(
-                          DateFormatter.formatShortDate(event.startDate),
-                          style: const TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ],
-                    ),
                   ),
+
+                  const SizedBox(width: 8),
 
                   // Favorite Circle Button
                   if (onFavoriteToggle != null)
@@ -168,6 +148,8 @@ class FeaturedEventCard extends StatelessWidget {
                     ),
                     child: Text(
                       event.category,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.bold,

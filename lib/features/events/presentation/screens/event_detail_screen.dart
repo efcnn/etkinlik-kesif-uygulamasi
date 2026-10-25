@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../../core/utils/date_formatter.dart';
+import '../../../../shared/widgets/event_network_image.dart';
 import '../../../favorites/presentation/providers/favorites_provider.dart';
 import '../../data/models/event_model.dart';
 import '../../data/repositories/event_repository.dart';
@@ -55,32 +56,10 @@ class _EventDetailView extends StatelessWidget {
                   child: Stack(
                     fit: StackFit.expand,
                     children: [
-                      event.imageUrl.isNotEmpty
-                          ? Image.network(
-                              event.imageUrl,
-                              fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) => Container(
-                                color: AppColors.surface,
-                                child: const Center(
-                                  child: Icon(Icons.image_not_supported_outlined, color: AppColors.textMuted, size: 50),
-                                ),
-                              ),
-                              loadingBuilder: (context, child, progress) {
-                                if (progress == null) return child;
-                                return Container(
-                                  color: AppColors.surface,
-                                  child: const Center(
-                                    child: CircularProgressIndicator(color: AppColors.accentGreen),
-                                  ),
-                                );
-                              },
-                            )
-                          : Container(
-                              color: AppColors.surface,
-                              child: const Center(
-                                child: Icon(Icons.event, color: AppColors.textMuted, size: 64),
-                              ),
-                            ),
+                      EventNetworkImage(
+                        imageUrl: event.imageUrl,
+                        iconSize: 64,
+                      ),
                       // Top to bottom gradient to ensure text and top buttons are visible
                       Container(
                         decoration: BoxDecoration(
@@ -107,8 +86,10 @@ class _EventDetailView extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Category Tag and Online Badge
-                      Row(
+                      // Category Tag and Online Badge (Wrap prevents overflow on small screens)
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 6,
                         children: [
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
@@ -125,8 +106,7 @@ class _EventDetailView extends StatelessWidget {
                               ),
                             ),
                           ),
-                          if (event.isOnline) ...[
-                            const SizedBox(width: 8),
+                          if (event.isOnline)
                             Container(
                               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                               decoration: BoxDecoration(
@@ -145,7 +125,6 @@ class _EventDetailView extends StatelessWidget {
                                 ),
                               ),
                             ),
-                          ],
                         ],
                       ),
                       const SizedBox(height: 14),
@@ -375,6 +354,8 @@ class _EventDetailView extends StatelessWidget {
                     ),
                     label: Text(
                       isFav ? 'Favorilerden Çıkar' : 'Favorilere Ekle',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                       style: AppTypography.buttonPrimary.copyWith(fontSize: 15),
                     ),
                     style: ElevatedButton.styleFrom(
@@ -493,9 +474,13 @@ class _EventDetailView extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 12),
-            Text(
-              'Açıklama getiriliyor...',
-              style: AppTypography.bodyMedium.copyWith(color: AppColors.textMuted),
+            Expanded(
+              child: Text(
+                'Açıklama getiriliyor...',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: AppTypography.bodyMedium.copyWith(color: AppColors.textMuted),
+              ),
             ),
           ],
         ),
