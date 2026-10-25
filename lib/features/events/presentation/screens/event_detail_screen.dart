@@ -265,7 +265,7 @@ class _EventDetailView extends StatelessWidget {
                       ],
 
                       const SizedBox(height: 24),
-                      const Divider(color: AppColors.divider),
+                      Divider(color: AppColors.divider),
                       const SizedBox(height: 14),
 
                       // Description Section (Isolated Error & Expandable)

@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
+import '../../../../core/theme/theme_provider.dart';
 import '../../../events/presentation/screens/event_detail_screen.dart';
 import '../../../events/presentation/widgets/event_list_tile.dart';
 import '../../../events/presentation/widgets/state_views.dart';
@@ -13,6 +14,8 @@ class FavoritesScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    context.watch<ThemeProvider?>();
+
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(

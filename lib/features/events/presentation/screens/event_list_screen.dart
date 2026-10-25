@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
+import '../../../../core/theme/theme_provider.dart';
 import '../../../favorites/presentation/providers/favorites_provider.dart';
 import '../providers/event_list_provider.dart';
 import '../widgets/category_chips.dart';
@@ -69,7 +70,46 @@ class _EventListScreenState extends State<EventListScreen> {
                           ],
                         ),
                       ),
-                      const SizedBox(width: 12),
+                      const SizedBox(width: 8),
+                      // Theme toggle circular icon button (only shown if ThemeProvider is present in tree)
+                      Builder(
+                        builder: (context) {
+                          final themeProvider = context.watch<ThemeProvider?>();
+                          if (themeProvider == null) return const SizedBox.shrink();
+                          final isDark = themeProvider.isDarkMode;
+                          return Padding(
+                            padding: const EdgeInsets.only(right: 8),
+                            child: Container(
+                              width: 44,
+                              height: 44,
+                              decoration: BoxDecoration(
+                                color: AppColors.surface,
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                  color: AppColors.border,
+                                ),
+                              ),
+                              child: IconButton(
+                                icon: AnimatedSwitcher(
+                                  duration: const Duration(milliseconds: 250),
+                                  transitionBuilder: (child, anim) => ScaleTransition(
+                                    scale: anim,
+                                    child: child,
+                                  ),
+                                  child: Icon(
+                                    isDark ? Icons.light_mode_rounded : Icons.dark_mode_rounded,
+                                    key: ValueKey<bool>(isDark),
+                                    size: 20,
+                                  ),
+                                ),
+                                color: isDark ? AppColors.accentGreen : AppColors.accentPurple,
+                                tooltip: isDark ? 'Açık Tema' : 'Koyu Tema',
+                                onPressed: themeProvider.toggleTheme,
+                              ),
+                            ),
+                          );
+                        },
+                      ),
                       // Refresh circular icon button
                       Container(
                         width: 44,
@@ -78,7 +118,7 @@ class _EventListScreenState extends State<EventListScreen> {
                           color: AppColors.surface,
                           shape: BoxShape.circle,
                           border: Border.all(
-                            color: Colors.white.withValues(alpha: 0.06),
+                            color: AppColors.border,
                           ),
                         ),
                         child: IconButton(

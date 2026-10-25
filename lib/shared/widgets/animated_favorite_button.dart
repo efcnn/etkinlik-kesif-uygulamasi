@@ -53,3 +53,4 @@ class AnimatedFavoriteButton extends StatelessWidget {
     return iconWidget;
   }
 }
+

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../../../core/theme/theme_provider.dart';
 import '../../../../shared/widgets/floating_nav_bar.dart';
 import '../../../favorites/presentation/providers/favorites_provider.dart';
 import '../../../favorites/presentation/screens/favorites_screen.dart';
@@ -16,20 +17,20 @@ class MainNavigationScreen extends StatefulWidget {
 class _MainNavigationScreenState extends State<MainNavigationScreen> {
   int _currentIndex = 0;
 
-  final List<Widget> _screens = const [
-    EventListScreen(),
-    FavoritesScreen(),
-  ];
-
   @override
   Widget build(BuildContext context) {
     final favCount = context.watch<FavoritesProvider>().count;
+    // Rebuild navigation bar and screens when theme changes
+    context.watch<ThemeProvider?>();
 
     return Scaffold(
       extendBody: true,
       body: IndexedStack(
         index: _currentIndex,
-        children: _screens,
+        children: const [
+          EventListScreen(),
+          FavoritesScreen(),
+        ],
       ),
       bottomNavigationBar: FloatingNavBar(
         currentIndex: _currentIndex,

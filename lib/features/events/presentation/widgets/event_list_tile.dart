@@ -131,7 +131,7 @@ class EventListTile extends StatelessWidget {
                         // Date & Location Row (overflow-safe)
                         Row(
                           children: [
-                            const Icon(Icons.calendar_today_rounded, size: 12, color: AppColors.textMuted),
+                            Icon(Icons.calendar_today_rounded, size: 12, color: AppColors.textMuted),
                             const SizedBox(width: 4),
                             Flexible(
                               flex: 2,

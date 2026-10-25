@@ -75,10 +75,10 @@ class _SearchFieldState extends State<SearchField> {
                 decoration: InputDecoration(
                   hintText: widget.hintText,
                   hintStyle: AppTypography.bodyMedium.copyWith(color: AppColors.textMuted),
-                  prefixIcon: const Icon(Icons.search_rounded, color: AppColors.textMuted, size: 22),
+                  prefixIcon: Icon(Icons.search_rounded, color: AppColors.textMuted, size: 22),
                   suffixIcon: _hasText
                       ? IconButton(
-                          icon: const Icon(Icons.close_rounded, size: 18, color: AppColors.textMuted),
+                          icon: Icon(Icons.close_rounded, size: 18, color: AppColors.textMuted),
                           onPressed: _clear,
                           tooltip: 'Temizle',
                         )
