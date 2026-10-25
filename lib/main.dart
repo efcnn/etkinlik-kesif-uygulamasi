@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import 'core/theme/app_theme.dart';
 import 'core/utils/date_formatter.dart';
 import 'features/events/data/repositories/event_repository.dart';
 import 'features/events/presentation/providers/event_list_provider.dart';
@@ -44,13 +45,7 @@ class EventDiscoveryApp extends StatelessWidget {
       child: MaterialApp(
         title: 'Etkinlik Keşif',
         debugShowCheckedModeBanner: false,
-        theme: ThemeData(
-          useMaterial3: true,
-          colorScheme: ColorScheme.fromSeed(
-            seedColor: const Color(0xFF6B4FA0),
-            brightness: Brightness.light,
-          ),
-        ),
+        theme: AppTheme.darkTheme,
         home: const MainNavigationScreen(),
       ),
     );
