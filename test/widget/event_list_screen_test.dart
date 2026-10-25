@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:etkinlik_kesif_uygulamasi/core/network/api_exception.dart';
 import 'package:etkinlik_kesif_uygulamasi/features/events/data/models/event_model.dart';
 import 'package:etkinlik_kesif_uygulamasi/features/events/data/repositories/event_repository.dart';
 import 'package:etkinlik_kesif_uygulamasi/features/events/presentation/providers/event_list_provider.dart';
 import 'package:etkinlik_kesif_uygulamasi/features/events/presentation/screens/event_list_screen.dart';
+import 'package:etkinlik_kesif_uygulamasi/features/favorites/data/favorites_local_storage.dart';
+import 'package:etkinlik_kesif_uygulamasi/features/favorites/presentation/providers/favorites_provider.dart';
 
 class MockEventRepository implements EventRepository {
   bool shouldFail = false;
@@ -60,18 +63,24 @@ class MockEventRepository implements EventRepository {
 }
 
 void main() {
+  setUp(() {
+    SharedPreferences.setMockInitialValues({});
+  });
+
   testWidgets('EventListScreen displays error view and retries on button press',
       (WidgetTester tester) async {
     final mockRepo = MockEventRepository();
     mockRepo.shouldFail = true;
 
     final provider = EventListProvider(repository: mockRepo);
+    final favProvider = FavoritesProvider(storage: FavoritesLocalStorage());
 
     await tester.pumpWidget(
       MultiProvider(
         providers: [
           Provider<EventRepository>.value(value: mockRepo),
           ChangeNotifierProvider<EventListProvider>.value(value: provider),
+          ChangeNotifierProvider<FavoritesProvider>.value(value: favProvider),
         ],
         child: const MaterialApp(
           home: EventListScreen(),
@@ -102,12 +111,14 @@ void main() {
       (WidgetTester tester) async {
     final mockRepo = MockEventRepository();
     final provider = EventListProvider(repository: mockRepo);
+    final favProvider = FavoritesProvider(storage: FavoritesLocalStorage());
 
     await tester.pumpWidget(
       MultiProvider(
         providers: [
           Provider<EventRepository>.value(value: mockRepo),
           ChangeNotifierProvider<EventListProvider>.value(value: provider),
+          ChangeNotifierProvider<FavoritesProvider>.value(value: favProvider),
         ],
         child: const MaterialApp(
           home: EventListScreen(),

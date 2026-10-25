@@ -4,7 +4,9 @@ import 'package:provider/provider.dart';
 import 'core/utils/date_formatter.dart';
 import 'features/events/data/repositories/event_repository.dart';
 import 'features/events/presentation/providers/event_list_provider.dart';
-import 'features/events/presentation/screens/event_list_screen.dart';
+import 'features/events/presentation/screens/main_navigation_screen.dart';
+import 'features/favorites/data/favorites_local_storage.dart';
+import 'features/favorites/presentation/providers/favorites_provider.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -25,10 +27,18 @@ class EventDiscoveryApp extends StatelessWidget {
         Provider<EventRepository>(
           create: (_) => EventRepository(),
         ),
+        Provider<FavoritesLocalStorage>(
+          create: (_) => FavoritesLocalStorage(),
+        ),
         ChangeNotifierProvider<EventListProvider>(
           create: (context) => EventListProvider(
             repository: context.read<EventRepository>(),
           ),
+        ),
+        ChangeNotifierProvider<FavoritesProvider>(
+          create: (context) => FavoritesProvider(
+            storage: context.read<FavoritesLocalStorage>(),
+          )..loadFavorites(),
         ),
       ],
       child: MaterialApp(
@@ -41,7 +51,7 @@ class EventDiscoveryApp extends StatelessWidget {
             brightness: Brightness.light,
           ),
         ),
-        home: const EventListScreen(),
+        home: const MainNavigationScreen(),
       ),
     );
   }

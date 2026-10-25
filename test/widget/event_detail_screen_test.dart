@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:etkinlik_kesif_uygulamasi/core/network/api_exception.dart';
 import 'package:etkinlik_kesif_uygulamasi/features/events/data/models/event_model.dart';
 import 'package:etkinlik_kesif_uygulamasi/features/events/data/repositories/event_repository.dart';
 import 'package:etkinlik_kesif_uygulamasi/features/events/presentation/screens/event_detail_screen.dart';
+import 'package:etkinlik_kesif_uygulamasi/features/favorites/data/favorites_local_storage.dart';
+import 'package:etkinlik_kesif_uygulamasi/features/favorites/presentation/providers/favorites_provider.dart';
 
 class MockEventRepository implements EventRepository {
   bool shouldFail = false;
@@ -60,13 +63,21 @@ void main() {
     tags: ['kodlama'],
   );
 
+  setUp(() {
+    SharedPreferences.setMockInitialValues({});
+  });
+
   testWidgets('EventDetailScreen immediately renders initial details',
       (WidgetTester tester) async {
     final mockRepo = MockEventRepository();
+    final favProvider = FavoritesProvider(storage: FavoritesLocalStorage());
 
     await tester.pumpWidget(
-      Provider<EventRepository>.value(
-        value: mockRepo,
+      MultiProvider(
+        providers: [
+          Provider<EventRepository>.value(value: mockRepo),
+          ChangeNotifierProvider<FavoritesProvider>.value(value: favProvider),
+        ],
         child: const MaterialApp(
           home: EventDetailScreen(initialEvent: initialEvent),
         ),
@@ -89,10 +100,14 @@ void main() {
       (WidgetTester tester) async {
     final mockRepo = MockEventRepository();
     mockRepo.shouldFail = true;
+    final favProvider = FavoritesProvider(storage: FavoritesLocalStorage());
 
     await tester.pumpWidget(
-      Provider<EventRepository>.value(
-        value: mockRepo,
+      MultiProvider(
+        providers: [
+          Provider<EventRepository>.value(value: mockRepo),
+          ChangeNotifierProvider<FavoritesProvider>.value(value: favProvider),
+        ],
         child: const MaterialApp(
           home: EventDetailScreen(initialEvent: initialEvent),
         ),

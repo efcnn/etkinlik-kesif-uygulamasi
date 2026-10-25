@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../../../core/utils/date_formatter.dart';
+import '../../../favorites/presentation/providers/favorites_provider.dart';
 import '../../data/models/event_model.dart';
 import '../../data/repositories/event_repository.dart';
 import '../providers/event_detail_provider.dart';
@@ -33,6 +34,8 @@ class _EventDetailView extends StatelessWidget {
   Widget build(BuildContext context) {
     final provider = context.watch<EventDetailProvider>();
     final event = provider.event;
+    final favoritesProvider = context.watch<FavoritesProvider>();
+    final isFav = favoritesProvider.isFavorite(event.id);
 
     return Scaffold(
       appBar: AppBar(
@@ -41,6 +44,28 @@ class _EventDetailView extends StatelessWidget {
           icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.of(context).pop(),
         ),
+        actions: [
+          IconButton(
+            icon: Icon(
+              isFav ? Icons.favorite_rounded : Icons.favorite_border_rounded,
+              color: isFav ? Colors.redAccent : null,
+            ),
+            tooltip: isFav ? 'Favorilerden Çıkar' : 'Favorilere Ekle',
+            onPressed: () {
+              favoritesProvider.toggleFavorite(event);
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(
+                    isFav
+                        ? '${event.title} favorilerden çıkarıldı.'
+                        : '${event.title} favorilere eklendi.',
+                  ),
+                  duration: const Duration(seconds: 1),
+                ),
+              );
+            },
+          ),
+        ],
       ),
       body: SingleChildScrollView(
         child: Column(
@@ -217,15 +242,25 @@ class _EventDetailView extends StatelessWidget {
               Expanded(
                 child: ElevatedButton.icon(
                   onPressed: () {
+                    favoritesProvider.toggleFavorite(event);
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Favori özelliği Milestone 6\'da entegre edilecek.'),
-                        duration: Duration(seconds: 1),
+                      SnackBar(
+                        content: Text(
+                          isFav
+                              ? '${event.title} favorilerden çıkarıldı.'
+                              : '${event.title} favorilere eklendi.',
+                        ),
+                        duration: const Duration(seconds: 1),
                       ),
                     );
                   },
-                  icon: const Icon(Icons.favorite_border_rounded),
-                  label: const Text('Favorilere Ekle'),
+                  icon: Icon(
+                    isFav ? Icons.favorite_rounded : Icons.favorite_border_rounded,
+                    color: isFav ? Colors.redAccent : null,
+                  ),
+                  label: Text(
+                    isFav ? 'Favorilerden Çıkar' : 'Favorilere Ekle',
+                  ),
                   style: ElevatedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     shape: RoundedRectangleBorder(

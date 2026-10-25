@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../../favorites/presentation/providers/favorites_provider.dart';
 import '../providers/event_list_provider.dart';
 import '../widgets/category_chips.dart';
 import '../widgets/event_list_tile.dart';
@@ -106,6 +107,7 @@ class _EventListScreenState extends State<EventListScreen> {
     }
 
     final events = provider.events;
+    final favoritesProvider = context.watch<FavoritesProvider>();
 
     return RefreshIndicator(
       onRefresh: () => provider.fetchEvents(isRefresh: true),
@@ -114,8 +116,14 @@ class _EventListScreenState extends State<EventListScreen> {
         itemCount: events.length,
         itemBuilder: (context, index) {
           final event = events[index];
+          final isFav = favoritesProvider.isFavorite(event.id);
+
           return EventListTile(
             event: event,
+            isFavorite: isFav,
+            onFavoriteToggle: () {
+              favoritesProvider.toggleFavorite(event);
+            },
             onTap: () {
               Navigator.of(context).push(
                 MaterialPageRoute(
