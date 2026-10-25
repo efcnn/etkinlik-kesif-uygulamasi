@@ -15,9 +15,11 @@ enum EventListStatus {
 
 /// Manages state for the event discovery list screen, including
 /// categories, searching with debounce, category filtering,
-/// loading, error, empty states, and stale response protection.
+/// pagination (infinite scroll), loading, error, empty states,
+/// and stale response protection.
 class EventListProvider extends ChangeNotifier {
   final EventRepository repository;
+  final int pageSize;
 
   EventListStatus _status = EventListStatus.initial;
   List<EventModel> _events = [];
@@ -26,12 +28,21 @@ class EventListProvider extends ChangeNotifier {
   String? _selectedCategory;
   String _searchQuery = '';
 
+  int _currentPage = 1;
+  bool _hasMore = false;
+  bool _isLoadingMore = false;
+  String? _loadMoreError;
+  int _totalCount = 0;
+
   Timer? _debounceTimer;
 
   /// Request counter to protect against stale/out-of-order network responses.
   int _latestRequestId = 0;
 
-  EventListProvider({required this.repository});
+  EventListProvider({
+    required this.repository,
+    this.pageSize = 6,
+  });
 
   EventListStatus get status => _status;
   List<EventModel> get events => List.unmodifiable(_events);
@@ -39,6 +50,12 @@ class EventListProvider extends ChangeNotifier {
   String? get errorMessage => _errorMessage;
   String? get selectedCategory => _selectedCategory;
   String get searchQuery => _searchQuery;
+
+  int get currentPage => _currentPage;
+  bool get hasMore => _hasMore;
+  bool get isLoadingMore => _isLoadingMore;
+  String? get loadMoreError => _loadMoreError;
+  int get totalCount => _totalCount > 0 ? _totalCount : _events.length;
 
   bool get isLoading => _status == EventListStatus.loading;
   bool get hasError => _status == EventListStatus.error;
@@ -63,10 +80,15 @@ class EventListProvider extends ChangeNotifier {
     }
   }
 
-  /// Fetches events from repository.
+  /// Fetches the first page of events from repository.
   /// Automatically drops responses if a newer request was dispatched while waiting.
   Future<void> fetchEvents({bool isRefresh = false}) async {
     final requestId = ++_latestRequestId;
+
+    _currentPage = 1;
+    _hasMore = false;
+    _isLoadingMore = false;
+    _loadMoreError = null;
 
     if (!isRefresh) {
       _status = EventListStatus.loading;
@@ -79,13 +101,18 @@ class EventListProvider extends ChangeNotifier {
       final response = await repository.getEvents(
         query: _searchQuery,
         category: categoryParam,
-        limit: 50, // Phase 1 requirement: fetch all events
+        page: 1,
+        limit: pageSize,
       );
 
       // If a newer request has already been sent, discard this response
       if (requestId != _latestRequestId) return;
 
       _events = response.items;
+      _currentPage = response.page;
+      _hasMore = response.hasMore;
+      _totalCount = response.total;
+
       if (_events.isEmpty) {
         _status = EventListStatus.empty;
       } else {
@@ -102,6 +129,52 @@ class EventListProvider extends ChangeNotifier {
       _errorMessage = 'Beklenmeyen bir hata oluştu. Lütfen tekrar deneyin.';
     } finally {
       if (requestId == _latestRequestId) {
+        notifyListeners();
+      }
+    }
+  }
+
+  /// Loads the next page of events and appends them to the current list.
+  Future<void> loadMoreEvents() async {
+    if (_isLoadingMore || !_hasMore || _status != EventListStatus.success) {
+      return;
+    }
+
+    final activeRequestId = _latestRequestId;
+    _isLoadingMore = true;
+    _loadMoreError = null;
+    notifyListeners();
+
+    try {
+      final nextPage = _currentPage + 1;
+      final categoryParam = (_selectedCategory == 'Tümü') ? null : _selectedCategory;
+      final response = await repository.getEvents(
+        query: _searchQuery,
+        category: categoryParam,
+        page: nextPage,
+        limit: pageSize,
+      );
+
+      // Discard if a new search, filter, or refresh occurred while loading more
+      if (activeRequestId != _latestRequestId) return;
+
+      final existingIds = _events.map((e) => e.id).toSet();
+      final newItems = response.items.where((e) => !existingIds.contains(e.id)).toList();
+
+      _events = [..._events, ...newItems];
+      _currentPage = response.page;
+      _hasMore = response.hasMore;
+      _totalCount = response.total;
+      _loadMoreError = null;
+    } on ApiException catch (e) {
+      if (activeRequestId != _latestRequestId) return;
+      _loadMoreError = e.message;
+    } catch (_) {
+      if (activeRequestId != _latestRequestId) return;
+      _loadMoreError = 'Daha fazla etkinlik yüklenirken hata oluştu.';
+    } finally {
+      if (activeRequestId == _latestRequestId) {
+        _isLoadingMore = false;
         notifyListeners();
       }
     }

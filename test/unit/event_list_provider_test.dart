@@ -6,10 +6,15 @@ import 'package:etkinlik_kesif_uygulamasi/features/events/presentation/providers
 
 class MockEventRepository implements EventRepository {
   List<EventModel> eventsToReturn = [];
+  Map<int, List<EventModel>> pagedEvents = {};
+  bool hasMoreToReturn = false;
+  int totalToReturn = 0;
   Exception? exceptionToThrow;
   Duration delay = Duration.zero;
   String? lastPassedCategory;
   String? lastPassedQuery;
+  int? lastPassedPage;
+  int? lastPassedLimit;
 
   @override
   Future<EventListResponse> getEvents({
@@ -21,18 +26,21 @@ class MockEventRepository implements EventRepository {
   }) async {
     lastPassedQuery = query;
     lastPassedCategory = category;
+    lastPassedPage = page;
+    lastPassedLimit = limit;
     if (delay > Duration.zero) {
       await Future.delayed(delay);
     }
     if (exceptionToThrow != null) {
       throw exceptionToThrow!;
     }
+    final items = pagedEvents.containsKey(page) ? pagedEvents[page]! : eventsToReturn;
     return EventListResponse(
-      items: eventsToReturn,
-      page: 1,
+      items: items,
+      page: page,
       limit: limit,
-      total: eventsToReturn.length,
-      hasMore: false,
+      total: totalToReturn > 0 ? totalToReturn : items.length,
+      hasMore: hasMoreToReturn,
     );
   }
 
@@ -173,6 +181,50 @@ void main() {
       expect(provider.searchQuery, '');
       expect(provider.selectedCategory, isNull);
       expect(provider.isFiltering, false);
+    });
+
+    test('loadMoreEvents appends next page and updates hasMore', () async {
+      final event2 = sampleEvent.copyWith(id: 'evt-2', title: 'Second Page Event');
+      mockRepository.pagedEvents = {
+        1: [sampleEvent],
+        2: [event2],
+      };
+      mockRepository.hasMoreToReturn = true;
+      mockRepository.totalToReturn = 2;
+
+      await provider.fetchEvents();
+      expect(provider.events.length, 1);
+      expect(provider.currentPage, 1);
+      expect(provider.hasMore, true);
+
+      // Now load page 2 where hasMore becomes false
+      mockRepository.hasMoreToReturn = false;
+      await provider.loadMoreEvents();
+
+      expect(provider.events.length, 2);
+      expect(provider.events.last.id, 'evt-2');
+      expect(provider.currentPage, 2);
+      expect(provider.hasMore, false);
+      expect(provider.totalCount, 2);
+    });
+
+    test('loadMoreEvents keeps existing events and sets loadMoreError if page 2 fails', () async {
+      mockRepository.eventsToReturn = [sampleEvent];
+      mockRepository.hasMoreToReturn = true;
+
+      await provider.fetchEvents();
+      expect(provider.events.length, 1);
+
+      // Simulate server error on page 2
+      mockRepository.exceptionToThrow = const ServerSideException(
+        message: 'Sayfa 2 yüklenemedi',
+      );
+      await provider.loadMoreEvents();
+
+      // Page 1 events remain intact, status is still success, loadMoreError is populated
+      expect(provider.status, EventListStatus.success);
+      expect(provider.events.length, 1);
+      expect(provider.loadMoreError, 'Sayfa 2 yüklenemedi');
     });
   });
 }

@@ -156,23 +156,29 @@ class _EventListScreenState extends State<EventListScreen> {
 
     // If filtering/searching, show a direct vertical list for cleaner results
     if (provider.isFiltering) {
-      return RefreshIndicator(
-        color: AppColors.accentGreen,
-        backgroundColor: AppColors.surface,
-        onRefresh: () => provider.fetchEvents(isRefresh: true),
-        child: ListView.builder(
-          padding: const EdgeInsets.only(top: 4, bottom: 100),
-          itemCount: events.length,
-          itemBuilder: (context, index) {
-            final event = events[index];
-            final isFav = favoritesProvider.isFavorite(event.id);
-            return EventListTile(
-              event: event,
-              isFavorite: isFav,
-              onFavoriteToggle: () => favoritesProvider.toggleFavorite(event),
-              onTap: () => _navigateToDetail(context, event),
-            );
-          },
+      return NotificationListener<ScrollNotification>(
+        onNotification: (notification) => _handleScrollNotification(notification, provider),
+        child: RefreshIndicator(
+          color: AppColors.accentGreen,
+          backgroundColor: AppColors.surface,
+          onRefresh: () => provider.fetchEvents(isRefresh: true),
+          child: ListView.builder(
+            padding: const EdgeInsets.only(top: 4, bottom: 100),
+            itemCount: events.length + 1,
+            itemBuilder: (context, index) {
+              if (index == events.length) {
+                return _buildPaginationFooter(provider);
+              }
+              final event = events[index];
+              final isFav = favoritesProvider.isFavorite(event.id);
+              return EventListTile(
+                event: event,
+                isFavorite: isFav,
+                onFavoriteToggle: () => favoritesProvider.toggleFavorite(event),
+                onTap: () => _navigateToDetail(context, event),
+              );
+            },
+          ),
         ),
       );
     }
@@ -180,120 +186,229 @@ class _EventListScreenState extends State<EventListScreen> {
     // Default discover mode: Featured carousel + All events vertical list
     final featuredEvents = events.take(4).toList();
 
-    return RefreshIndicator(
-      color: AppColors.accentGreen,
-      backgroundColor: AppColors.surface,
-      onRefresh: () => provider.fetchEvents(isRefresh: true),
-      child: CustomScrollView(
-        slivers: [
-          // Featured carousel section header
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(20, 8, 20, 12),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Expanded(
-                    child: Text(
-                      'Öne Çıkanlar',
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: AppTypography.headingMedium,
+    return NotificationListener<ScrollNotification>(
+      onNotification: (notification) => _handleScrollNotification(notification, provider),
+      child: RefreshIndicator(
+        color: AppColors.accentGreen,
+        backgroundColor: AppColors.surface,
+        onRefresh: () => provider.fetchEvents(isRefresh: true),
+        child: CustomScrollView(
+          slivers: [
+            // Featured carousel section header
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(20, 8, 20, 12),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: Text(
+                        'Öne Çıkanlar',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: AppTypography.headingMedium,
+                      ),
                     ),
-                  ),
-                  const SizedBox(width: 8),
-                  Flexible(
-                    child: Text(
-                      '${featuredEvents.length} Etkinlik',
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: AppTypography.labelSmall.copyWith(color: AppColors.accentGreen),
+                    const SizedBox(width: 8),
+                    Flexible(
+                      child: Text(
+                        '${featuredEvents.length} Etkinlik',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: AppTypography.labelSmall.copyWith(color: AppColors.accentGreen),
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
-          ),
 
-          // Horizontal Featured Carousel
-          SliverToBoxAdapter(
-            child: SizedBox(
-              height: 310,
-              child: ListView.builder(
-                scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                itemCount: featuredEvents.length,
-                itemBuilder: (context, index) {
-                  final event = featuredEvents[index];
+            // Horizontal Featured Carousel
+            SliverToBoxAdapter(
+              child: SizedBox(
+                height: 310,
+                child: ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  itemCount: featuredEvents.length,
+                  itemBuilder: (context, index) {
+                    final event = featuredEvents[index];
+                    final isFav = favoritesProvider.isFavorite(event.id);
+                    return FeaturedEventCard(
+                      event: event,
+                      isFavorite: isFav,
+                      onFavoriteToggle: () => favoritesProvider.toggleFavorite(event),
+                      onTap: () => _navigateToDetail(context, event),
+                    );
+                  },
+                ),
+              ),
+            ),
+
+            const SliverToBoxAdapter(
+              child: SizedBox(height: 20),
+            ),
+
+            // All Events section header
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(20, 8, 20, 8),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: Text(
+                        'Tüm Etkinlikler',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: AppTypography.headingMedium,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Flexible(
+                      child: Text(
+                        '${events.length} / ${provider.totalCount}',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: AppTypography.labelSmall.copyWith(color: AppColors.textMuted),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
+            // Vertical list of compact tiles
+            SliverList(
+              delegate: SliverChildBuilderDelegate(
+                (context, index) {
+                  final event = events[index];
                   final isFav = favoritesProvider.isFavorite(event.id);
-                  return FeaturedEventCard(
+                  return EventListTile(
                     event: event,
                     isFavorite: isFav,
                     onFavoriteToggle: () => favoritesProvider.toggleFavorite(event),
                     onTap: () => _navigateToDetail(context, event),
                   );
                 },
+                childCount: events.length,
               ),
             ),
-          ),
 
-          const SliverToBoxAdapter(
-            child: SizedBox(height: 20),
-          ),
-
-          // All Events section header
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(20, 8, 20, 8),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Expanded(
-                    child: Text(
-                      'Tüm Etkinlikler',
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: AppTypography.headingMedium,
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Flexible(
-                    child: Text(
-                      'Toplam ${events.length}',
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: AppTypography.labelSmall.copyWith(color: AppColors.textMuted),
-                    ),
-                  ),
-                ],
-              ),
+            // Pagination footer (loading more / retry / load more button)
+            SliverToBoxAdapter(
+              child: _buildPaginationFooter(provider),
             ),
-          ),
 
-          // Vertical list of compact tiles
-          SliverList(
-            delegate: SliverChildBuilderDelegate(
-              (context, index) {
-                final event = events[index];
-                final isFav = favoritesProvider.isFavorite(event.id);
-                return EventListTile(
-                  event: event,
-                  isFavorite: isFav,
-                  onFavoriteToggle: () => favoritesProvider.toggleFavorite(event),
-                  onTap: () => _navigateToDetail(context, event),
-                );
-              },
-              childCount: events.length,
+            // Space for the floating bottom navigation bar
+            const SliverToBoxAdapter(
+              child: SizedBox(height: 100),
             ),
-          ),
-
-          // Space for the floating bottom navigation bar
-          const SliverToBoxAdapter(
-            child: SizedBox(height: 100),
-          ),
-        ],
+          ],
+        ),
       ),
     );
+  }
+
+  bool _handleScrollNotification(ScrollNotification notification, EventListProvider provider) {
+    if (notification.metrics.axis == Axis.vertical &&
+        notification.metrics.maxScrollExtent > 0 &&
+        notification.metrics.pixels >= notification.metrics.maxScrollExtent - 200) {
+      if (provider.hasMore && !provider.isLoadingMore && provider.loadMoreError == null) {
+        provider.loadMoreEvents();
+      }
+    }
+    return false;
+  }
+
+  Widget _buildPaginationFooter(EventListProvider provider) {
+    if (provider.isLoadingMore) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 20),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const SizedBox(
+              width: 20,
+              height: 20,
+              child: CircularProgressIndicator(
+                strokeWidth: 2.5,
+                color: AppColors.accentGreen,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Flexible(
+              child: Text(
+                'Daha fazla etkinlik yükleniyor...',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: AppTypography.bodyMedium,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    if (provider.loadMoreError != null) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          decoration: BoxDecoration(
+            color: AppColors.surface,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: AppColors.error.withValues(alpha: 0.3),
+            ),
+          ),
+          child: Row(
+            children: [
+              const Icon(Icons.error_outline_rounded, color: AppColors.error, size: 20),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  provider.loadMoreError!,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppTypography.bodyMedium.copyWith(color: AppColors.error),
+                ),
+              ),
+              const SizedBox(width: 8),
+              TextButton(
+                onPressed: provider.loadMoreEvents,
+                child: const Text(
+                  'Tekrar Dene',
+                  style: TextStyle(
+                    color: AppColors.accentGreen,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    if (provider.hasMore) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+        child: Center(
+          child: OutlinedButton.icon(
+            onPressed: provider.loadMoreEvents,
+            icon: const Icon(Icons.expand_more_rounded, size: 18),
+            label: const Text(
+              'Daha Fazla Göster',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        ),
+      );
+    }
+
+    return const SizedBox.shrink();
   }
 
   void _navigateToDetail(BuildContext context, event) {
