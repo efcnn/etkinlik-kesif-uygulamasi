@@ -1,14 +1,19 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_typography.dart';
+
 class SearchField extends StatefulWidget {
   final ValueChanged<String> onChanged;
   final VoidCallback onClear;
+  final VoidCallback? onFilterTap;
   final String hintText;
 
   const SearchField({
     super.key,
     required this.onChanged,
     required this.onClear,
+    this.onFilterTap,
     this.hintText = 'Etkinlik veya etiket ara...',
   });
 
@@ -47,33 +52,64 @@ class _SearchFieldState extends State<SearchField> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      decoration: BoxDecoration(
-        color: Colors.grey[100],
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: Colors.grey[300]!),
-      ),
-      child: TextField(
-        controller: _controller,
-        onChanged: widget.onChanged,
-        textInputAction: TextInputAction.search,
-        decoration: InputDecoration(
-          hintText: widget.hintText,
-          hintStyle: TextStyle(color: Colors.grey[500], fontSize: 14),
-          prefixIcon: const Icon(Icons.search, color: Colors.grey),
-          suffixIcon: _hasText
-              ? IconButton(
-                  icon: const Icon(Icons.clear, size: 18, color: Colors.grey),
-                  onPressed: _clear,
-                  tooltip: 'Temizle',
-                )
-              : null,
-          border: InputBorder.none,
-          contentPadding: const EdgeInsets.symmetric(vertical: 12),
-        ),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: Row(
+        children: [
+          // Search Input Container
+          Expanded(
+            child: Container(
+              height: 52,
+              decoration: BoxDecoration(
+                color: AppColors.surface,
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(
+                  color: Colors.white.withValues(alpha: 0.05),
+                ),
+              ),
+              child: TextField(
+                controller: _controller,
+                onChanged: widget.onChanged,
+                textInputAction: TextInputAction.search,
+                style: AppTypography.bodyLarge.copyWith(color: AppColors.textPrimary),
+                decoration: InputDecoration(
+                  hintText: widget.hintText,
+                  hintStyle: AppTypography.bodyMedium.copyWith(color: AppColors.textMuted),
+                  prefixIcon: const Icon(Icons.search_rounded, color: AppColors.textMuted, size: 22),
+                  suffixIcon: _hasText
+                      ? IconButton(
+                          icon: const Icon(Icons.close_rounded, size: 18, color: AppColors.textMuted),
+                          onPressed: _clear,
+                          tooltip: 'Temizle',
+                        )
+                      : null,
+                  border: InputBorder.none,
+                  contentPadding: const EdgeInsets.symmetric(vertical: 14),
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
+
+          // Accent Square Filter Button (Dribbble reference)
+          GestureDetector(
+            onTap: widget.onFilterTap,
+            child: Container(
+              width: 52,
+              height: 52,
+              decoration: BoxDecoration(
+                color: AppColors.accentGreen,
+                borderRadius: BorderRadius.circular(18),
+              ),
+              child: const Icon(
+                Icons.tune_rounded,
+                color: AppColors.accentGreenText,
+                size: 22,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
 }
-

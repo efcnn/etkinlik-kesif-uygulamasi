@@ -65,7 +65,7 @@ void main() {
     expect(find.text('Henüz Favori Etkinliğiniz Yok'), findsNothing);
 
     // Tap favorite icon to remove
-    await tester.tap(find.byIcon(Icons.favorite));
+    await tester.tap(find.byIcon(Icons.favorite_rounded));
     await tester.pumpAndSettle();
 
     // Now empty view appears

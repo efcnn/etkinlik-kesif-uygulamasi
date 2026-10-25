@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../../../shared/widgets/floating_nav_bar.dart';
 import '../../../favorites/presentation/providers/favorites_provider.dart';
 import '../../../favorites/presentation/screens/favorites_screen.dart';
 import 'event_list_screen.dart';
@@ -25,39 +26,20 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     final favCount = context.watch<FavoritesProvider>().count;
 
     return Scaffold(
+      extendBody: true,
       body: IndexedStack(
         index: _currentIndex,
         children: _screens,
       ),
-      bottomNavigationBar: BottomNavigationBar(
+      bottomNavigationBar: FloatingNavBar(
         currentIndex: _currentIndex,
+        favoriteBadgeCount: favCount,
         onTap: (index) {
           setState(() {
             _currentIndex = index;
           });
         },
-        items: [
-          const BottomNavigationBarItem(
-            icon: Icon(Icons.explore_outlined),
-            activeIcon: Icon(Icons.explore_rounded),
-            label: 'Keşfet',
-          ),
-          BottomNavigationBarItem(
-            icon: Badge(
-              isLabelVisible: favCount > 0,
-              label: Text('$favCount'),
-              child: const Icon(Icons.favorite_border_rounded),
-            ),
-            activeIcon: Badge(
-              isLabelVisible: favCount > 0,
-              label: Text('$favCount'),
-              child: const Icon(Icons.favorite_rounded),
-            ),
-            label: 'Favoriler',
-          ),
-        ],
       ),
     );
   }
 }
-

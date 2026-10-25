@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_typography.dart';
 import '../../../../core/utils/date_formatter.dart';
 import '../../../favorites/presentation/providers/favorites_provider.dart';
 import '../../data/models/event_model.dart';
@@ -38,233 +40,352 @@ class _EventDetailView extends StatelessWidget {
     final isFav = favoritesProvider.isFavorite(event.id);
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(event.title, maxLines: 1, overflow: TextOverflow.ellipsis),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.of(context).pop(),
-        ),
-        actions: [
-          IconButton(
-            icon: Icon(
-              isFav ? Icons.favorite_rounded : Icons.favorite_border_rounded,
-              color: isFav ? Colors.redAccent : null,
-            ),
-            tooltip: isFav ? 'Favorilerden Çıkar' : 'Favorilere Ekle',
-            onPressed: () {
-              favoritesProvider.toggleFavorite(event);
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(
-                    isFav
-                        ? '${event.title} favorilerden çıkarıldı.'
-                        : '${event.title} favorilere eklendi.',
-                  ),
-                  duration: const Duration(seconds: 1),
-                ),
-              );
-            },
-          ),
-        ],
-      ),
-      body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Top Image Header
-            Container(
-              width: double.infinity,
-              height: 220,
-              color: Colors.grey[300],
-              child: event.imageUrl.isNotEmpty
-                  ? Image.network(
-                      event.imageUrl,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) =>
-                          const Center(child: Icon(Icons.image_not_supported_outlined, size: 48, color: Colors.grey)),
-                      loadingBuilder: (context, child, progress) {
-                        if (progress == null) return child;
-                        return const Center(child: CircularProgressIndicator());
-                      },
-                    )
-                  : const Center(child: Icon(Icons.event, size: 64, color: Colors.grey)),
-            ),
-
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Category & Online Chip
-                  Row(
+      backgroundColor: AppColors.background,
+      body: Stack(
+        children: [
+          // Scrollable Body
+          SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Hero Image with Dark Gradient
+                SizedBox(
+                  height: 320,
+                  width: double.infinity,
+                  child: Stack(
+                    fit: StackFit.expand,
                     children: [
-                      Chip(
-                        label: Text(
-                          event.category,
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold,
-                            color: Theme.of(context).primaryColor,
-                          ),
-                        ),
-                        backgroundColor: Theme.of(context).primaryColor.withValues(alpha: 0.1),
-                        side: BorderSide.none,
-                        padding: EdgeInsets.zero,
-                        materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                      ),
-                      const SizedBox(width: 8),
-                      if (event.isOnline)
-                        Chip(
-                          label: const Text(
-                            'Online',
-                            style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.teal),
-                          ),
-                          backgroundColor: Colors.teal.withValues(alpha: 0.1),
-                          side: BorderSide.none,
-                          padding: EdgeInsets.zero,
-                          materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                        ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-
-                  // Event Title
-                  Text(
-                    event.title,
-                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
-                  ),
-                  const SizedBox(height: 12),
-
-                  // Location Info Row
-                  Row(
-                    children: [
-                      const Icon(Icons.location_on, color: Colors.redAccent, size: 20),
-                      const SizedBox(width: 6),
-                      Expanded(
-                        child: Text(
-                          event.location,
-                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                color: Colors.grey[700],
+                      event.imageUrl.isNotEmpty
+                          ? Image.network(
+                              event.imageUrl,
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) => Container(
+                                color: AppColors.surface,
+                                child: const Center(
+                                  child: Icon(Icons.image_not_supported_outlined, color: AppColors.textMuted, size: 50),
+                                ),
                               ),
+                              loadingBuilder: (context, child, progress) {
+                                if (progress == null) return child;
+                                return Container(
+                                  color: AppColors.surface,
+                                  child: const Center(
+                                    child: CircularProgressIndicator(color: AppColors.accentGreen),
+                                  ),
+                                );
+                              },
+                            )
+                          : Container(
+                              color: AppColors.surface,
+                              child: const Center(
+                                child: Icon(Icons.event, color: AppColors.textMuted, size: 64),
+                              ),
+                            ),
+                      // Top to bottom gradient to ensure text and top buttons are visible
+                      Container(
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [
+                              Colors.black.withValues(alpha: 0.6),
+                              Colors.transparent,
+                              AppColors.background.withValues(alpha: 0.95),
+                              AppColors.background,
+                            ],
+                            stops: const [0.0, 0.4, 0.85, 1.0],
+                          ),
                         ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 20),
-                  const Divider(),
-                  const SizedBox(height: 12),
+                ),
 
-                  // Info Tiles (Date, Organizer, Capacity)
-                  _buildInfoTile(
-                    context,
-                    icon: Icons.calendar_today,
-                    title: 'Tarih & Saat',
-                    subtitle: DateFormatter.formatRange(event.startDate, event.endDate),
-                  ),
-                  const SizedBox(height: 12),
-                  _buildInfoTile(
-                    context,
-                    icon: Icons.person_outline,
-                    title: 'Organizatör',
-                    subtitle: event.organizer,
-                  ),
-                  const SizedBox(height: 12),
-                  _buildInfoTile(
-                    context,
-                    icon: Icons.group_outlined,
-                    title: 'Katılımcı Durumu',
-                    subtitle: '${event.registeredCount} / ${event.capacity} kayıtlı kişi',
-                  ),
-
-                  // Tags Section
-                  if (event.tags.isNotEmpty) ...[
-                    const SizedBox(height: 16),
-                    Text(
-                      'Etiketler',
-                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                            fontWeight: FontWeight.bold,
-                          ),
-                    ),
-                    const SizedBox(height: 8),
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 4,
-                      children: event.tags
-                          .map(
-                            (tag) => Chip(
-                              label: Text('#$tag', style: const TextStyle(fontSize: 11)),
-                              backgroundColor: Colors.grey[100],
-                              side: BorderSide.none,
-                              padding: EdgeInsets.zero,
+                // Content Sheet
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Category Tag and Online Badge
+                      Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+                            decoration: BoxDecoration(
+                              color: AppColors.accentGreen,
+                              borderRadius: BorderRadius.circular(12),
                             ),
-                          )
-                          .toList(),
-                    ),
-                  ],
+                            child: Text(
+                              event.category,
+                              style: const TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.accentGreenText,
+                              ),
+                            ),
+                          ),
+                          if (event.isOnline) ...[
+                            const SizedBox(width: 8),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                              decoration: BoxDecoration(
+                                color: AppColors.onlineBadge.withValues(alpha: 0.15),
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(
+                                  color: AppColors.onlineBadge.withValues(alpha: 0.4),
+                                ),
+                              ),
+                              child: const Text(
+                                'Online Etkinlik',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                  color: AppColors.onlineBadge,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                      const SizedBox(height: 14),
 
-                  const SizedBox(height: 20),
-                  const Divider(),
-                  const SizedBox(height: 12),
+                      // Event Title
+                      Text(
+                        event.title,
+                        style: AppTypography.displayLarge.copyWith(fontSize: 24),
+                      ),
+                      const SizedBox(height: 10),
 
-                  // Description Section (Isolated State & Retry)
-                  Text(
-                    'Etkinlik Hakkında',
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
+                      // Location Row
+                      Row(
+                        children: [
+                          const Icon(Icons.location_on_rounded, color: AppColors.accentPurple, size: 18),
+                          const SizedBox(width: 6),
+                          Expanded(
+                            child: Text(
+                              event.location,
+                              style: AppTypography.bodyLarge.copyWith(
+                                color: AppColors.textSecondary,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 20),
+
+                      // Host / Organizer Card (Dribbble reference)
+                      Container(
+                        padding: const EdgeInsets.all(14),
+                        decoration: BoxDecoration(
+                          color: AppColors.surface,
+                          borderRadius: BorderRadius.circular(18),
+                          border: Border.all(
+                            color: Colors.white.withValues(alpha: 0.05),
+                          ),
                         ),
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 44,
+                              height: 44,
+                              decoration: BoxDecoration(
+                                color: AppColors.accentPurple.withValues(alpha: 0.2),
+                                shape: BoxShape.circle,
+                              ),
+                              child: Center(
+                                child: Text(
+                                  event.organizer.isNotEmpty ? event.organizer[0].toUpperCase() : 'O',
+                                  style: const TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                    color: AppColors.accentPurpleLight,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    event.organizer,
+                                    style: AppTypography.titleLarge,
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    'Etkinlik Düzenleyicisi',
+                                    style: AppTypography.labelSmall.copyWith(color: AppColors.textMuted),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+
+                      // Info Tiles (Date/Time & Registered Count)
+                      _buildInfoTile(
+                        icon: Icons.calendar_today_rounded,
+                        title: 'Tarih & Saat',
+                        subtitle: DateFormatter.formatRange(event.startDate, event.endDate),
+                      ),
+                      const SizedBox(height: 10),
+                      _buildInfoTile(
+                        icon: Icons.groups_rounded,
+                        title: 'Katılımcı Kontenjanı',
+                        subtitle: '${event.registeredCount} / ${event.capacity} Kayıtlı Katılımcı',
+                      ),
+
+                      // Tags
+                      if (event.tags.isNotEmpty) ...[
+                        const SizedBox(height: 20),
+                        Text(
+                          'Etiketler',
+                          style: AppTypography.titleLarge,
+                        ),
+                        const SizedBox(height: 10),
+                        Wrap(
+                          spacing: 8,
+                          runSpacing: 8,
+                          children: event.tags
+                              .map(
+                                (tag) => Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.surface,
+                                    borderRadius: BorderRadius.circular(12),
+                                    border: Border.all(
+                                      color: Colors.white.withValues(alpha: 0.05),
+                                    ),
+                                  ),
+                                  child: Text(
+                                    '#$tag',
+                                    style: AppTypography.labelSmall.copyWith(
+                                      color: AppColors.textSecondary,
+                                    ),
+                                  ),
+                                ),
+                              )
+                              .toList(),
+                        ),
+                      ],
+
+                      const SizedBox(height: 24),
+                      const Divider(color: AppColors.divider),
+                      const SizedBox(height: 14),
+
+                      // Description Section (Isolated Error & Expandable)
+                      Text(
+                        'Etkinlik Hakkında',
+                        style: AppTypography.headingMedium,
+                      ),
+                      const SizedBox(height: 10),
+                      _buildDescriptionSection(context, provider),
+
+                      const SizedBox(height: 100), // Space for bottom button
+                    ],
                   ),
-                  const SizedBox(height: 8),
-                  _buildDescriptionSection(context, provider),
-                  const SizedBox(height: 80), // spacing for bottom bar
+                ),
+              ],
+            ),
+          ),
+
+          // Top Floating Navigation (Back & Favorite buttons)
+          SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  // Back button circle
+                  _buildCircleActionButton(
+                    icon: Icons.arrow_back_rounded,
+                    tooltip: 'Geri',
+                    onTap: () => Navigator.of(context).pop(),
+                  ),
+
+                  // Favorite toggle circle button
+                  _buildCircleActionButton(
+                    icon: isFav ? Icons.favorite_rounded : Icons.favorite_border_rounded,
+                    iconColor: isFav ? AppColors.favoriteRed : Colors.white,
+                    tooltip: isFav ? 'Favorilerden Çıkar' : 'Favorilere Ekle',
+                    onTap: () {
+                      favoritesProvider.toggleFavorite(event);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          backgroundColor: AppColors.surfaceLight,
+                          content: Text(
+                            isFav
+                                ? '${event.title} favorilerden çıkarıldı.'
+                                : '${event.title} favorilere eklendi.',
+                            style: const TextStyle(color: Colors.white),
+                          ),
+                          duration: const Duration(seconds: 1),
+                        ),
+                      );
+                    },
+                  ),
                 ],
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
+
+      // Bottom Action Bar (Non-ticketing, Favorite toggle button)
       bottomNavigationBar: SafeArea(
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
           decoration: BoxDecoration(
-            color: Theme.of(context).scaffoldBackgroundColor,
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.05),
-                blurRadius: 10,
-                offset: const Offset(0, -2),
+            color: AppColors.surface,
+            border: Border(
+              top: BorderSide(
+                color: Colors.white.withValues(alpha: 0.05),
               ),
-            ],
+            ),
           ),
           child: Row(
             children: [
               Expanded(
-                child: ElevatedButton.icon(
-                  onPressed: () {
-                    favoritesProvider.toggleFavorite(event);
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(
-                          isFav
-                              ? '${event.title} favorilerden çıkarıldı.'
-                              : '${event.title} favorilere eklendi.',
+                child: SizedBox(
+                  height: 54,
+                  child: ElevatedButton.icon(
+                    onPressed: () {
+                      favoritesProvider.toggleFavorite(event);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          backgroundColor: AppColors.surfaceLight,
+                          content: Text(
+                            isFav
+                                ? '${event.title} favorilerden çıkarıldı.'
+                                : '${event.title} favorilere eklendi.',
+                            style: const TextStyle(color: Colors.white),
+                          ),
+                          duration: const Duration(seconds: 1),
                         ),
-                        duration: const Duration(seconds: 1),
+                      );
+                    },
+                    icon: Icon(
+                      isFav ? Icons.favorite_rounded : Icons.favorite_border_rounded,
+                      color: isFav ? AppColors.favoriteRed : AppColors.accentGreenText,
+                      size: 22,
+                    ),
+                    label: Text(
+                      isFav ? 'Favorilerden Çıkar' : 'Favorilere Ekle',
+                      style: AppTypography.buttonPrimary.copyWith(fontSize: 15),
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: isFav ? AppColors.surfaceLight : AppColors.accentGreen,
+                      foregroundColor: isFav ? Colors.white : AppColors.accentGreenText,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(22),
+                        side: isFav
+                            ? BorderSide(color: AppColors.favoriteRed.withValues(alpha: 0.5))
+                            : BorderSide.none,
                       ),
-                    );
-                  },
-                  icon: Icon(
-                    isFav ? Icons.favorite_rounded : Icons.favorite_border_rounded,
-                    color: isFav ? Colors.redAccent : null,
-                  ),
-                  label: Text(
-                    isFav ? 'Favorilerden Çıkar' : 'Favorilere Ekle',
-                  ),
-                  style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
                     ),
                   ),
                 ),
@@ -276,41 +397,81 @@ class _EventDetailView extends StatelessWidget {
     );
   }
 
-  Widget _buildInfoTile(
-    BuildContext context, {
+  Widget _buildCircleActionButton({
+    required IconData icon,
+    required String tooltip,
+    required VoidCallback onTap,
+    Color iconColor = Colors.white,
+  }) {
+    return Tooltip(
+      message: tooltip,
+      child: GestureDetector(
+        onTap: onTap,
+        child: Container(
+          width: 44,
+          height: 44,
+          decoration: BoxDecoration(
+            color: Colors.black.withValues(alpha: 0.55),
+            shape: BoxShape.circle,
+            border: Border.all(
+              color: Colors.white.withValues(alpha: 0.15),
+              width: 1,
+            ),
+          ),
+          child: Center(
+            child: Icon(icon, color: iconColor, size: 20),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildInfoTile({
     required IconData icon,
     required String title,
     required String subtitle,
   }) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Container(
-          padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            color: Colors.grey[100],
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: Icon(icon, size: 20, color: Theme.of(context).primaryColor),
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: Colors.white.withValues(alpha: 0.04),
         ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                title,
-                style: TextStyle(fontSize: 12, color: Colors.grey[600]),
-              ),
-              const SizedBox(height: 2),
-              Text(
-                subtitle,
-                style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
-              ),
-            ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: AppColors.accentGreen.withValues(alpha: 0.15),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(icon, size: 18, color: AppColors.accentGreen),
           ),
-        ),
-      ],
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: AppTypography.labelSmall.copyWith(color: AppColors.textMuted),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  subtitle,
+                  style: AppTypography.bodyLarge.copyWith(
+                    color: AppColors.textPrimary,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -326,12 +487,15 @@ class _EventDetailView extends StatelessWidget {
             const SizedBox(
               width: 16,
               height: 16,
-              child: CircularProgressIndicator(strokeWidth: 2),
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                color: AppColors.accentGreen,
+              ),
             ),
             const SizedBox(width: 12),
             Text(
               'Açıklama getiriliyor...',
-              style: TextStyle(color: Colors.grey[600], fontSize: 13),
+              style: AppTypography.bodyMedium.copyWith(color: AppColors.textMuted),
             ),
           ],
         ),
@@ -340,25 +504,28 @@ class _EventDetailView extends StatelessWidget {
 
     if (provider.descriptionError != null) {
       return Container(
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
-          color: Colors.red[50],
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: Colors.red[200]!),
+          color: AppColors.surface,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: AppColors.error.withValues(alpha: 0.3)),
         ),
         child: Row(
           children: [
-            const Icon(Icons.info_outline, color: Colors.redAccent, size: 20),
-            const SizedBox(width: 8),
+            const Icon(Icons.info_outline_rounded, color: AppColors.error, size: 20),
+            const SizedBox(width: 10),
             Expanded(
               child: Text(
                 provider.descriptionError!,
-                style: const TextStyle(fontSize: 13, color: Colors.redAccent),
+                style: AppTypography.bodyMedium.copyWith(color: AppColors.error),
               ),
             ),
             TextButton(
               onPressed: provider.retryDescription,
-              child: const Text('Tekrar Dene'),
+              child: Text(
+                'Tekrar Dene',
+                style: TextStyle(color: AppColors.accentGreen, fontWeight: FontWeight.bold),
+              ),
             ),
           ],
         ),
@@ -369,7 +536,10 @@ class _EventDetailView extends StatelessWidget {
     if (description == null || description.trim().isEmpty) {
       return Text(
         'Bu etkinlik için henüz bir açıklama girilmemiş.',
-        style: TextStyle(color: Colors.grey[600], fontStyle: FontStyle.italic),
+        style: AppTypography.bodyMedium.copyWith(
+          color: AppColors.textMuted,
+          fontStyle: FontStyle.italic,
+        ),
       );
     }
 
@@ -380,24 +550,36 @@ class _EventDetailView extends StatelessWidget {
           description,
           maxLines: provider.isDescriptionExpanded ? null : 3,
           overflow: provider.isDescriptionExpanded ? null : TextOverflow.ellipsis,
-          style: TextStyle(
-            fontSize: 14,
-            height: 1.5,
-            color: Colors.grey[800],
+          style: AppTypography.bodyLarge.copyWith(
+            color: AppColors.textSecondary,
+            height: 1.6,
           ),
         ),
         if (description.length > 80)
           GestureDetector(
             onTap: provider.toggleDescriptionExpanded,
             child: Padding(
-              padding: const EdgeInsets.only(top: 6.0),
-              child: Text(
-                provider.isDescriptionExpanded ? 'Daha Az Göster' : 'Daha Fazla Göster',
-                style: TextStyle(
-                  color: Theme.of(context).primaryColor,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 13,
-                ),
+              padding: const EdgeInsets.only(top: 8.0),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    provider.isDescriptionExpanded ? 'Daha Az Göster' : 'Daha Fazla Göster',
+                    style: const TextStyle(
+                      color: AppColors.accentGreen,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 13,
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  Icon(
+                    provider.isDescriptionExpanded
+                        ? Icons.keyboard_arrow_up_rounded
+                        : Icons.keyboard_arrow_down_rounded,
+                    color: AppColors.accentGreen,
+                    size: 18,
+                  ),
+                ],
               ),
             ),
           ),
@@ -405,4 +587,3 @@ class _EventDetailView extends StatelessWidget {
     );
   }
 }
-
