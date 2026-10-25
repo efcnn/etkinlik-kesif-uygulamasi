@@ -10,6 +10,7 @@ import 'package:etkinlik_kesif_uygulamasi/features/events/presentation/screens/e
 import 'package:etkinlik_kesif_uygulamasi/features/events/presentation/widgets/skeleton_loading_view.dart';
 import 'package:etkinlik_kesif_uygulamasi/features/favorites/data/favorites_local_storage.dart';
 import 'package:etkinlik_kesif_uygulamasi/features/favorites/presentation/providers/favorites_provider.dart';
+import 'package:etkinlik_kesif_uygulamasi/shared/widgets/animated_favorite_button.dart';
 import 'package:etkinlik_kesif_uygulamasi/shared/widgets/event_network_image.dart';
 
 class LongTextMockRepository implements EventRepository {
@@ -167,6 +168,34 @@ void main() {
     await tester.pump(const Duration(milliseconds: 100));
 
     expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('AnimatedFavoriteButton animates icon change on toggle',
+      (WidgetTester tester) async {
+    bool isFav = false;
+
+    await tester.pumpWidget(
+      StatefulBuilder(
+        builder: (context, setState) {
+          return MaterialApp(
+            home: Scaffold(
+              body: AnimatedFavoriteButton(
+                isFavorite: isFav,
+                onTap: () => setState(() => isFav = !isFav),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+
+    expect(find.byIcon(Icons.favorite_border_rounded), findsOneWidget);
+
+    await tester.tap(find.byType(AnimatedFavoriteButton));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+
+    expect(find.byIcon(Icons.favorite_rounded), findsOneWidget);
   });
 }
 

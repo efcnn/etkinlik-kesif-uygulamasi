@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../../core/utils/date_formatter.dart';
+import '../../../../shared/widgets/animated_favorite_button.dart';
 import '../../../../shared/widgets/event_network_image.dart';
 import '../../data/models/event_model.dart';
 
@@ -12,6 +13,7 @@ class FeaturedEventCard extends StatelessWidget {
   final VoidCallback onTap;
   final bool isFavorite;
   final VoidCallback? onFavoriteToggle;
+  final String? heroTag;
 
   const FeaturedEventCard({
     super.key,
@@ -19,10 +21,13 @@ class FeaturedEventCard extends StatelessWidget {
     required this.onTap,
     this.isFavorite = false,
     this.onFavoriteToggle,
+    this.heroTag,
   });
 
   @override
   Widget build(BuildContext context) {
+    final effectiveHeroTag = heroTag ?? 'featured-image-${event.id}';
+
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -43,10 +48,13 @@ class FeaturedEventCard extends StatelessWidget {
         child: Stack(
           fit: StackFit.expand,
           children: [
-            // Background Image with fallback
-            EventNetworkImage(
-              imageUrl: event.imageUrl,
-              iconSize: 48,
+            // Background Image with Hero transition and fallback
+            Hero(
+              tag: effectiveHeroTag,
+              child: EventNetworkImage(
+                imageUrl: event.imageUrl,
+                iconSize: 48,
+              ),
             ),
 
             // Gradient Overlay for Readability
@@ -106,23 +114,23 @@ class FeaturedEventCard extends StatelessWidget {
 
                   // Favorite Circle Button
                   if (onFavoriteToggle != null)
-                    GestureDetector(
-                      onTap: onFavoriteToggle,
-                      child: Container(
-                        width: 36,
-                        height: 36,
-                        decoration: BoxDecoration(
-                          color: Colors.black.withValues(alpha: 0.55),
-                          shape: BoxShape.circle,
-                          border: Border.all(
-                            color: Colors.white.withValues(alpha: 0.15),
-                            width: 0.8,
-                          ),
+                    Container(
+                      width: 36,
+                      height: 36,
+                      decoration: BoxDecoration(
+                        color: Colors.black.withValues(alpha: 0.55),
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.15),
+                          width: 0.8,
                         ),
-                        child: Icon(
-                          isFavorite ? Icons.favorite_rounded : Icons.favorite_border_rounded,
-                          color: isFavorite ? AppColors.favoriteRed : Colors.white,
+                      ),
+                      child: Center(
+                        child: AnimatedFavoriteButton(
+                          isFavorite: isFavorite,
+                          onTap: onFavoriteToggle!,
                           size: 18,
+                          inactiveColor: Colors.white,
                         ),
                       ),
                     ),

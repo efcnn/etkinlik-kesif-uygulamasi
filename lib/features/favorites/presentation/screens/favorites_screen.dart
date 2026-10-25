@@ -107,16 +107,21 @@ class FavoritesScreen extends StatelessWidget {
       itemCount: favorites.length,
       itemBuilder: (context, index) {
         final event = favorites[index];
+        final tag = 'fav-list-image-${event.id}';
         return EventListTile(
           event: event,
           isFavorite: true,
+          heroTag: tag,
           onFavoriteToggle: () {
             favoritesProvider.toggleFavorite(event);
           },
           onTap: () {
             Navigator.of(context).push(
               MaterialPageRoute(
-                builder: (_) => EventDetailScreen(initialEvent: event),
+                builder: (_) => EventDetailScreen(
+                  initialEvent: event,
+                  heroTag: tag,
+                ),
               ),
             );
           },

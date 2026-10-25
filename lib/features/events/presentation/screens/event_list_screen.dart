@@ -171,11 +171,13 @@ class _EventListScreenState extends State<EventListScreen> {
               }
               final event = events[index];
               final isFav = favoritesProvider.isFavorite(event.id);
+              final tag = 'filter-list-image-${event.id}';
               return EventListTile(
                 event: event,
                 isFavorite: isFav,
+                heroTag: tag,
                 onFavoriteToggle: () => favoritesProvider.toggleFavorite(event),
-                onTap: () => _navigateToDetail(context, event),
+                onTap: () => _navigateToDetail(context, event, heroTag: tag),
               );
             },
           ),
@@ -234,11 +236,13 @@ class _EventListScreenState extends State<EventListScreen> {
                   itemBuilder: (context, index) {
                     final event = featuredEvents[index];
                     final isFav = favoritesProvider.isFavorite(event.id);
+                    final tag = 'featured-image-${event.id}';
                     return FeaturedEventCard(
                       event: event,
                       isFavorite: isFav,
+                      heroTag: tag,
                       onFavoriteToggle: () => favoritesProvider.toggleFavorite(event),
-                      onTap: () => _navigateToDetail(context, event),
+                      onTap: () => _navigateToDetail(context, event, heroTag: tag),
                     );
                   },
                 ),
@@ -284,11 +288,13 @@ class _EventListScreenState extends State<EventListScreen> {
                 (context, index) {
                   final event = events[index];
                   final isFav = favoritesProvider.isFavorite(event.id);
+                  final tag = 'all-list-image-${event.id}';
                   return EventListTile(
                     event: event,
                     isFavorite: isFav,
+                    heroTag: tag,
                     onFavoriteToggle: () => favoritesProvider.toggleFavorite(event),
-                    onTap: () => _navigateToDetail(context, event),
+                    onTap: () => _navigateToDetail(context, event, heroTag: tag),
                   );
                 },
                 childCount: events.length,
@@ -411,10 +417,13 @@ class _EventListScreenState extends State<EventListScreen> {
     return const SizedBox.shrink();
   }
 
-  void _navigateToDetail(BuildContext context, event) {
+  void _navigateToDetail(BuildContext context, event, {String? heroTag}) {
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (_) => EventDetailScreen(initialEvent: event),
+        builder: (_) => EventDetailScreen(
+          initialEvent: event,
+          heroTag: heroTag,
+        ),
       ),
     );
   }

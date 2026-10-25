@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../../core/utils/date_formatter.dart';
+import '../../../../shared/widgets/animated_favorite_button.dart';
 import '../../../../shared/widgets/event_network_image.dart';
 import '../../../favorites/presentation/providers/favorites_provider.dart';
 import '../../data/models/event_model.dart';
@@ -12,10 +13,12 @@ import '../providers/event_detail_provider.dart';
 
 class EventDetailScreen extends StatelessWidget {
   final EventModel initialEvent;
+  final String? heroTag;
 
   const EventDetailScreen({
     super.key,
     required this.initialEvent,
+    this.heroTag,
   });
 
   @override
@@ -25,13 +28,19 @@ class EventDetailScreen extends StatelessWidget {
         repository: context.read<EventRepository>(),
         initialEvent: initialEvent,
       )..fetchDescription(),
-      child: const _EventDetailView(),
+      child: _EventDetailView(
+        heroTag: heroTag ?? 'detail-image-${initialEvent.id}',
+      ),
     );
   }
 }
 
 class _EventDetailView extends StatelessWidget {
-  const _EventDetailView();
+  final String heroTag;
+
+  const _EventDetailView({
+    required this.heroTag,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -56,9 +65,12 @@ class _EventDetailView extends StatelessWidget {
                   child: Stack(
                     fit: StackFit.expand,
                     children: [
-                      EventNetworkImage(
-                        imageUrl: event.imageUrl,
-                        iconSize: 64,
+                      Hero(
+                        tag: heroTag,
+                        child: EventNetworkImage(
+                          imageUrl: event.imageUrl,
+                          iconSize: 64,
+                        ),
                       ),
                       // Top to bottom gradient to ensure text and top buttons are visible
                       Container(
@@ -286,26 +298,41 @@ class _EventDetailView extends StatelessWidget {
                     onTap: () => Navigator.of(context).pop(),
                   ),
 
-                  // Favorite toggle circle button
-                  _buildCircleActionButton(
-                    icon: isFav ? Icons.favorite_rounded : Icons.favorite_border_rounded,
-                    iconColor: isFav ? AppColors.favoriteRed : Colors.white,
-                    tooltip: isFav ? 'Favorilerden Çıkar' : 'Favorilere Ekle',
-                    onTap: () {
-                      favoritesProvider.toggleFavorite(event);
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          backgroundColor: AppColors.surfaceLight,
-                          content: Text(
-                            isFav
-                                ? '${event.title} favorilerden çıkarıldı.'
-                                : '${event.title} favorilere eklendi.',
-                            style: const TextStyle(color: Colors.white),
-                          ),
-                          duration: const Duration(seconds: 1),
-                        ),
-                      );
-                    },
+                  // Favorite toggle circle button with scale animation
+                  Container(
+                    width: 44,
+                    height: 44,
+                    decoration: BoxDecoration(
+                      color: Colors.black.withValues(alpha: 0.55),
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: Colors.white.withValues(alpha: 0.15),
+                        width: 1,
+                      ),
+                    ),
+                    child: Center(
+                      child: AnimatedFavoriteButton(
+                        isFavorite: isFav,
+                        size: 20,
+                        inactiveColor: Colors.white,
+                        tooltip: isFav ? 'Favorilerden Çıkar' : 'Favorilere Ekle',
+                        onTap: () {
+                          favoritesProvider.toggleFavorite(event);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              backgroundColor: AppColors.surfaceLight,
+                              content: Text(
+                                isFav
+                                    ? '${event.title} favorilerden çıkarıldı.'
+                                    : '${event.title} favorilere eklendi.',
+                                style: const TextStyle(color: Colors.white),
+                              ),
+                              duration: const Duration(seconds: 1),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
                   ),
                 ],
               ),
@@ -531,13 +558,18 @@ class _EventDetailView extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          description,
-          maxLines: provider.isDescriptionExpanded ? null : 3,
-          overflow: provider.isDescriptionExpanded ? null : TextOverflow.ellipsis,
-          style: AppTypography.bodyLarge.copyWith(
-            color: AppColors.textSecondary,
-            height: 1.6,
+        AnimatedSize(
+          duration: const Duration(milliseconds: 250),
+          curve: Curves.easeInOut,
+          alignment: Alignment.topLeft,
+          child: Text(
+            description,
+            maxLines: provider.isDescriptionExpanded ? null : 3,
+            overflow: provider.isDescriptionExpanded ? null : TextOverflow.ellipsis,
+            style: AppTypography.bodyLarge.copyWith(
+              color: AppColors.textSecondary,
+              height: 1.6,
+            ),
           ),
         ),
         if (description.length > 80)
