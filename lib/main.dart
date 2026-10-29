@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter/material.dart'; //Flutter'ın görsel bileşenlerini (renkler,butonlar vb.) kullanabilmek için Material Design kütüphanesini ekler.
+import 'package:provider/provider.dart'; //Ekranların verileri dinlemesini ve durum yönetimini sağlayan Provider paketini dahil eder
 
 import 'core/theme/app_theme.dart';
 import 'core/theme/theme_provider.dart';
@@ -11,14 +11,15 @@ import 'features/favorites/data/favorites_local_storage.dart';
 import 'features/favorites/presentation/providers/favorites_provider.dart';
 
 Future<void> main() async {
-  WidgetsFlutterBinding.ensureInitialized();
+  WidgetsFlutterBinding.ensureInitialized(); // çalışmadan önce async bir işlem (await) veya telefonun donanımına/dosyalarına erişen bir hazırlık yapacaksanız, Flutter motoruyla işletim sistemi arasındaki köprüyü (Binding) bu satırla önceden hazır hale getirmeniz gerekir. Yoksa uygulama açılışta hata verir.
 
   // Initialize Turkish date formatting with intl
-  await DateFormatter.initialize();
+  await DateFormatter.initialize(); //await sayesinde Türkçe dil verisi yüklenmeden ekranlar çizilmeye başlamaz.
 
   runApp(const EventDiscoveryApp());
 }
 
+// KÖK WİDGET
 class EventDiscoveryApp extends StatelessWidget {
   const EventDiscoveryApp({super.key});
 

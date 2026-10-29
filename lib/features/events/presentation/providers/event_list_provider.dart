@@ -1,3 +1,5 @@
+////Ekranlarımız (EventListScreen) doğrudan API ile konuşmaz veya veriyi kendi içinde tutmaz. Bunun yerine EventListProvider tüm veriyi, aramayı, filtrelemeyi ve sayfalama (pagination) işlemlerini yönetir; bir şey değiştiğinde notifyListeners() diyerek ekranın otomatik güncellenmesini sağlar.
+
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 

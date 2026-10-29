@@ -1,4 +1,5 @@
-/// Base class for all API-related exceptions.
+/// İnternet koptuğunda veya sunucu çöktüğünde Flutter'ın karmaşık İngilizce hatalarını kullanıcıya göstermemek için kendi hata sınıflarımızı yazdık:
+//Tüm hatalarımızın ата sınıfıdır (abstract class). İçinde Türkçe message ve HTTP statusCode (404, 500 vb.) tutar.
 abstract class ApiException implements Exception {
   final String message;
   final int? statusCode;
@@ -9,21 +10,21 @@ abstract class ApiException implements Exception {
   String toString() => message;
 }
 
-/// Thrown when there is no internet connection or socket failure.
+// Kullanıcının interneti kapalıysa fırlatılır
 class NetworkConnectionException extends ApiException {
   const NetworkConnectionException([
     super.message = 'İnternet bağlantısı kurulamadı. Lütfen bağlantınızı kontrol edin.',
   ]);
 }
 
-/// Thrown when a request exceeds the time limit.
+//Sunucu 10 saniye içinde cevap vermezse fırlatılır
 class ApiTimeoutException extends ApiException {
   const ApiTimeoutException([
     super.message = 'Sunucu yanıt vermedi, istek zaman aşımına uğradı. Lütfen tekrar deneyin.',
   ]);
 }
 
-/// Thrown when the server responds with 5xx or unexpected server error.
+//MOBILAB sunucusu rastgele 500 hatası verdiğinde fırlatılır.
 class ServerSideException extends ApiException {
   const ServerSideException({
     String message = 'Sunucuda geçici bir hata oluştu. Lütfen tekrar deneyin.',
@@ -31,7 +32,7 @@ class ServerSideException extends ApiException {
   }) : super(message, statusCode: statusCode);
 }
 
-/// Thrown when a resource (e.g. event) is not found (404).
+//404 (Etkinlik bulunamadı) durumunda fırlatılır.
 class NotFoundException extends ApiException {
   const NotFoundException([
     super.message = 'Aradığınız etkinlik bulunamadı.',

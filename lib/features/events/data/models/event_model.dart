@@ -1,3 +1,4 @@
+////JSON Tercümanı
 /// Immutable and null-safe model representing an Event.
 class EventModel {
   final String id;

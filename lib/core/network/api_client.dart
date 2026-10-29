@@ -1,6 +1,6 @@
-import 'dart:async';
-import 'dart:convert';
-import 'dart:io';
+import 'dart:async'; //Zaman aşımı hatasını (TimeoutException) ve Future.delayed (bekleme) fonksiyonunu kullanmak için.
+import 'dart:convert'; //Sunucudan gelen JSON metnini Dart nesnesine çeviren
+import 'dart:io';//İnternet bağlantısı koptuğunda işletim sisteminin fırlattığı SocketException hatasını yakalamak için.
 
 import 'package:http/http.dart' as http;
 

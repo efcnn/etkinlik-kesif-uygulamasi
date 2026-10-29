@@ -1,3 +1,4 @@
+////ApiEndpoints, ApiClient ve EventModel parçalarını birleştiren dosyadır:
 import '../../../../core/constants/api_endpoints.dart';
 import '../../../../core/network/api_client.dart';
 import '../../../../core/network/api_exception.dart';
