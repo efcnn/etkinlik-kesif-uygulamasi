@@ -46,9 +46,10 @@ class EventListTile extends StatelessWidget {
           color: AppColors.surface,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: Colors.white.withValues(alpha: 0.04),
+            color: AppColors.cardBorder,
             width: 1,
           ),
+          boxShadow: AppColors.cardShadow,
         ),
         child: Material(
           color: Colors.transparent,
@@ -88,17 +89,17 @@ class EventListTile extends StatelessWidget {
                               child: Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                                 decoration: BoxDecoration(
-                                  color: AppColors.accentGreen.withValues(alpha: 0.15),
+                                  color: AppColors.badgeBackground,
                                   borderRadius: BorderRadius.circular(8),
                                 ),
                                 child: Text(
                                   event.category,
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     fontSize: 11,
                                     fontWeight: FontWeight.bold,
-                                    color: AppColors.accentGreen,
+                                    color: AppColors.badgeText,
                                   ),
                                 ),
                               ),

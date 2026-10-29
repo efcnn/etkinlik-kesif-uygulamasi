@@ -47,10 +47,11 @@ class CategoryChips extends StatelessWidget {
                 borderRadius: BorderRadius.circular(20),
                 border: Border.all(
                   color: isSelected
-                      ? AppColors.accentGreen
-                      : Colors.white.withValues(alpha: 0.06),
+                      ? AppColors.accentGreenDark
+                      : AppColors.cardBorder,
                   width: 1,
                 ),
+                boxShadow: isSelected ? [] : AppColors.cardShadow,
               ),
               child: Center(
                 child: Text(

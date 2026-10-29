@@ -64,8 +64,9 @@ class _SearchFieldState extends State<SearchField> {
                 color: AppColors.surface,
                 borderRadius: BorderRadius.circular(20),
                 border: Border.all(
-                  color: Colors.white.withValues(alpha: 0.05),
+                  color: AppColors.cardBorder,
                 ),
+                boxShadow: AppColors.cardShadow,
               ),
               child: TextField(
                 controller: _controller,

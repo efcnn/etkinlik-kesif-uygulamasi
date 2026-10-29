@@ -59,15 +59,16 @@ class FavoritesScreen extends StatelessWidget {
                           color: AppColors.surface,
                           borderRadius: BorderRadius.circular(16),
                           border: Border.all(
-                            color: Colors.white.withValues(alpha: 0.06),
+                            color: AppColors.cardBorder,
                           ),
+                          boxShadow: AppColors.cardShadow,
                         ),
                         child: Text(
                           '${favoritesProvider.count} Etkinlik',
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.bold,
-                            color: AppColors.accentGreen,
+                            color: AppColors.accentText,
                           ),
                         ),
                       ),

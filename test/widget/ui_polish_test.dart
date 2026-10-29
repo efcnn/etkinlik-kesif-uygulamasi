@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:etkinlik_kesif_uygulamasi/core/theme/app_colors.dart';
+import 'package:etkinlik_kesif_uygulamasi/core/theme/theme_provider.dart';
 import 'package:etkinlik_kesif_uygulamasi/features/events/data/models/event_model.dart';
 import 'package:etkinlik_kesif_uygulamasi/features/events/data/repositories/event_repository.dart';
 import 'package:etkinlik_kesif_uygulamasi/features/events/presentation/providers/event_list_provider.dart';
@@ -196,6 +198,43 @@ void main() {
     await tester.pump(const Duration(milliseconds: 300));
 
     expect(find.byIcon(Icons.favorite_rounded), findsOneWidget);
+  });
+
+  testWidgets('Tapping theme toggle button immediately updates EventListScreen background color',
+      (WidgetTester tester) async {
+    final repo = LongTextMockRepository();
+    final listProvider = EventListProvider(repository: repo);
+    final favProvider = FavoritesProvider(storage: FavoritesLocalStorage());
+    final themeProvider = ThemeProvider();
+
+    await tester.pumpWidget(
+      MultiProvider(
+        providers: [
+          Provider<EventRepository>.value(value: repo),
+          ChangeNotifierProvider<ThemeProvider>.value(value: themeProvider),
+          ChangeNotifierProvider<EventListProvider>.value(value: listProvider),
+          ChangeNotifierProvider<FavoritesProvider>.value(value: favProvider),
+        ],
+        child: const MaterialApp(
+          home: EventListScreen(),
+        ),
+      ),
+    );
+
+    await tester.pump();
+
+    // Initially Dark Mode
+    Scaffold scaffold = tester.widget<Scaffold>(find.byType(Scaffold));
+    expect(scaffold.backgroundColor, AppColors.darkBackground);
+
+    // Tap the theme toggle icon button
+    await tester.tap(find.byIcon(Icons.light_mode_rounded));
+    await tester.pump();
+
+    // Verify EventListScreen immediately rebuilt with Light Mode background
+    scaffold = tester.widget<Scaffold>(find.byType(Scaffold));
+    expect(scaffold.backgroundColor, AppColors.lightBackground);
+    expect(find.byIcon(Icons.dark_mode_rounded), findsOneWidget);
   });
 }
 

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/theme_provider.dart';
 import '../../../../shared/widgets/floating_nav_bar.dart';
 import '../../../favorites/presentation/providers/favorites_provider.dart';
@@ -20,11 +21,11 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   @override
   Widget build(BuildContext context) {
     final favCount = context.watch<FavoritesProvider>().count;
-    // Rebuild navigation bar and screens when theme changes
     context.watch<ThemeProvider?>();
 
     return Scaffold(
       extendBody: true,
+      backgroundColor: AppColors.background,
       body: IndexedStack(
         index: _currentIndex,
         children: const [

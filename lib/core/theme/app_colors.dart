@@ -18,13 +18,15 @@ class AppColors {
   static const Color darkDivider = Color(0xFF2B253C);
 
   // --- Light Palette Tokens ---
-  static const Color lightBackground = Color(0xFFF6F5FA);
+  static const Color lightBackground = Color(0xFFF4F2FA);
   static const Color lightSurface = Color(0xFFFFFFFF);
-  static const Color lightSurfaceLight = Color(0xFFECE9F5);
+  static const Color lightSurfaceLight = Color(0xFFEAE6F6);
   static const Color lightTextPrimary = Color(0xFF14111F);
   static const Color lightTextSecondary = Color(0xFF534E66);
   static const Color lightTextMuted = Color(0xFF7D7890);
-  static const Color lightDivider = Color(0xFFE4E0F0);
+  static const Color lightDivider = Color(0xFFE2DDF0);
+  static const Color lightAccentGreenText = Color(0xFF1E6B30);
+  static const Color lightBadgeBackground = Color(0xFFE2F7D3);
 
   // --- Adaptive Surface & Text Getters ---
   static Color get background => isDarkMode ? darkBackground : lightBackground;
@@ -39,6 +41,38 @@ class AppColors {
   static Color get divider => isDarkMode ? darkDivider : lightDivider;
   static Color get border => isDarkMode ? darkDivider : lightDivider;
   static Color get inputBackground => isDarkMode ? darkSurface : lightSurface;
+
+  /// High-contrast accent color for text & icons on surface backgrounds
+  /// (Soft lime in Dark Mode, deep emerald green in Light Mode).
+  static Color get accentText => isDarkMode ? accentGreen : lightAccentGreenText;
+
+  /// Adaptive category badge background color.
+  static Color get badgeBackground =>
+      isDarkMode ? accentGreen.withValues(alpha: 0.15) : lightBadgeBackground;
+
+  /// Adaptive category badge text color.
+  static Color get badgeText => isDarkMode ? accentGreen : lightAccentGreenText;
+
+  /// Adaptive border color for cards, inputs, and chips.
+  static Color get cardBorder =>
+      isDarkMode ? Colors.white.withValues(alpha: 0.06) : lightDivider;
+
+  /// Adaptive subtle shadow for cards and inputs.
+  static List<BoxShadow> get cardShadow => isDarkMode
+      ? []
+      : [
+          BoxShadow(
+            color: const Color(0xFF6B4FA0).withValues(alpha: 0.07),
+            blurRadius: 14,
+            offset: const Offset(0, 4),
+          ),
+        ];
+
+  /// Adaptive floating navigation bar background and shadow.
+  static Color get navBarBackground => isDarkMode ? darkSurfaceLight : lightSurface;
+  static Color get navBarShadowColor => isDarkMode
+      ? Colors.black.withValues(alpha: 0.4)
+      : const Color(0xFF6B4FA0).withValues(alpha: 0.14);
 
   // Primary Accent: Soft lime / mint green
   static const Color accentGreen = Color(0xFFC5F5A3);

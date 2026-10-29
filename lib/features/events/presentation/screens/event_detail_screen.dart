@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
+import '../../../../core/theme/theme_provider.dart';
 import '../../../../core/utils/date_formatter.dart';
 import '../../../../shared/widgets/animated_favorite_button.dart';
 import '../../../../shared/widgets/event_network_image.dart';
@@ -44,6 +45,7 @@ class _EventDetailView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    context.watch<ThemeProvider?>();
     final provider = context.watch<EventDetailProvider>();
     final event = provider.event;
     final favoritesProvider = context.watch<FavoritesProvider>();
@@ -172,8 +174,9 @@ class _EventDetailView extends StatelessWidget {
                           color: AppColors.surface,
                           borderRadius: BorderRadius.circular(18),
                           border: Border.all(
-                            color: Colors.white.withValues(alpha: 0.05),
+                            color: AppColors.cardBorder,
                           ),
+                          boxShadow: AppColors.cardShadow,
                         ),
                         child: Row(
                           children: [
@@ -190,7 +193,7 @@ class _EventDetailView extends StatelessWidget {
                                   style: const TextStyle(
                                     fontSize: 18,
                                     fontWeight: FontWeight.bold,
-                                    color: AppColors.accentPurpleLight,
+                                    color: AppColors.accentPurple,
                                   ),
                                 ),
                               ),
@@ -325,7 +328,7 @@ class _EventDetailView extends StatelessWidget {
                                 isFav
                                     ? '${event.title} favorilerden çıkarıldı.'
                                     : '${event.title} favorilere eklendi.',
-                                style: const TextStyle(color: Colors.white),
+                                style: TextStyle(color: AppColors.textPrimary),
                               ),
                               duration: const Duration(seconds: 1),
                             ),
@@ -349,7 +352,7 @@ class _EventDetailView extends StatelessWidget {
             color: AppColors.surface,
             border: Border(
               top: BorderSide(
-                color: Colors.white.withValues(alpha: 0.05),
+                color: AppColors.cardBorder,
               ),
             ),
           ),
@@ -368,7 +371,7 @@ class _EventDetailView extends StatelessWidget {
                             isFav
                                 ? '${event.title} favorilerden çıkarıldı.'
                                 : '${event.title} favorilere eklendi.',
-                            style: const TextStyle(color: Colors.white),
+                            style: TextStyle(color: AppColors.textPrimary),
                           ),
                           duration: const Duration(seconds: 1),
                         ),
@@ -383,11 +386,14 @@ class _EventDetailView extends StatelessWidget {
                       isFav ? 'Favorilerden Çıkar' : 'Favorilere Ekle',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: AppTypography.buttonPrimary.copyWith(fontSize: 15),
+                      style: AppTypography.buttonPrimary.copyWith(
+                        fontSize: 15,
+                        color: isFav ? AppColors.textPrimary : AppColors.accentGreenText,
+                      ),
                     ),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: isFav ? AppColors.surfaceLight : AppColors.accentGreen,
-                      foregroundColor: isFav ? Colors.white : AppColors.accentGreenText,
+                      foregroundColor: isFav ? AppColors.textPrimary : AppColors.accentGreenText,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(22),
                         side: isFav
@@ -445,18 +451,19 @@ class _EventDetailView extends StatelessWidget {
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: Colors.white.withValues(alpha: 0.04),
+          color: AppColors.cardBorder,
         ),
+        boxShadow: AppColors.cardShadow,
       ),
       child: Row(
         children: [
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: AppColors.accentGreen.withValues(alpha: 0.15),
+              color: AppColors.badgeBackground,
               borderRadius: BorderRadius.circular(10),
             ),
-            child: Icon(icon, size: 18, color: AppColors.accentGreen),
+            child: Icon(icon, size: 18, color: AppColors.badgeText),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -536,7 +543,7 @@ class _EventDetailView extends StatelessWidget {
               onPressed: provider.retryDescription,
               child: Text(
                 'Tekrar Dene',
-                style: TextStyle(color: AppColors.accentGreen, fontWeight: FontWeight.bold),
+                style: TextStyle(color: AppColors.accentText, fontWeight: FontWeight.bold),
               ),
             ),
           ],
@@ -582,8 +589,8 @@ class _EventDetailView extends StatelessWidget {
                 children: [
                   Text(
                     provider.isDescriptionExpanded ? 'Daha Az Göster' : 'Daha Fazla Göster',
-                    style: const TextStyle(
-                      color: AppColors.accentGreen,
+                    style: TextStyle(
+                      color: AppColors.accentText,
                       fontWeight: FontWeight.bold,
                       fontSize: 13,
                     ),
@@ -593,7 +600,7 @@ class _EventDetailView extends StatelessWidget {
                     provider.isDescriptionExpanded
                         ? Icons.keyboard_arrow_up_rounded
                         : Icons.keyboard_arrow_down_rounded,
-                    color: AppColors.accentGreen,
+                    color: AppColors.accentText,
                     size: 18,
                   ),
                 ],

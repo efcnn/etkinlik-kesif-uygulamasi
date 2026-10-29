@@ -34,6 +34,9 @@ class _EventListScreenState extends State<EventListScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Watch ThemeProvider at the top level so the entire screen rebuilds on theme toggle
+    final themeProvider = context.watch<ThemeProvider?>();
+
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
@@ -44,12 +47,40 @@ class _EventListScreenState extends State<EventListScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const SizedBox(height: 12),
-                // Custom Header (matching Dribbble reference)
+                // Custom Header (matching Dribbble reference with SKYLAB logo badge)
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
+                      // SKYLAB Logo Avatar
+                      Container(
+                        width: 44,
+                        height: 44,
+                        margin: const EdgeInsets.only(right: 12),
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: AppColors.accentPurple.withValues(alpha: 0.5),
+                            width: 1.5,
+                          ),
+                          boxShadow: AppColors.cardShadow,
+                        ),
+                        child: ClipOval(
+                          child: Image.asset(
+                            'assets/images/skylab_logo.png',
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) => Container(
+                              color: AppColors.surface,
+                              child: const Icon(
+                                Icons.rocket_launch_rounded,
+                                color: AppColors.accentPurple,
+                                size: 20,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -71,45 +102,44 @@ class _EventListScreenState extends State<EventListScreen> {
                         ),
                       ),
                       const SizedBox(width: 8),
-                      // Theme toggle circular icon button (only shown if ThemeProvider is present in tree)
-                      Builder(
-                        builder: (context) {
-                          final themeProvider = context.watch<ThemeProvider?>();
-                          if (themeProvider == null) return const SizedBox.shrink();
-                          final isDark = themeProvider.isDarkMode;
-                          return Padding(
-                            padding: const EdgeInsets.only(right: 8),
-                            child: Container(
-                              width: 44,
-                              height: 44,
-                              decoration: BoxDecoration(
-                                color: AppColors.surface,
-                                shape: BoxShape.circle,
-                                border: Border.all(
-                                  color: AppColors.border,
-                                ),
+                      // Theme toggle circular icon button
+                      if (themeProvider != null)
+                        Padding(
+                          padding: const EdgeInsets.only(right: 8),
+                          child: Container(
+                            width: 44,
+                            height: 44,
+                            decoration: BoxDecoration(
+                              color: AppColors.surface,
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: AppColors.cardBorder,
                               ),
-                              child: IconButton(
-                                icon: AnimatedSwitcher(
-                                  duration: const Duration(milliseconds: 250),
-                                  transitionBuilder: (child, anim) => ScaleTransition(
-                                    scale: anim,
-                                    child: child,
-                                  ),
-                                  child: Icon(
-                                    isDark ? Icons.light_mode_rounded : Icons.dark_mode_rounded,
-                                    key: ValueKey<bool>(isDark),
-                                    size: 20,
-                                  ),
-                                ),
-                                color: isDark ? AppColors.accentGreen : AppColors.accentPurple,
-                                tooltip: isDark ? 'Açık Tema' : 'Koyu Tema',
-                                onPressed: themeProvider.toggleTheme,
-                              ),
+                              boxShadow: AppColors.cardShadow,
                             ),
-                          );
-                        },
-                      ),
+                            child: IconButton(
+                              icon: AnimatedSwitcher(
+                                duration: const Duration(milliseconds: 250),
+                                transitionBuilder: (child, anim) => ScaleTransition(
+                                  scale: anim,
+                                  child: child,
+                                ),
+                                child: Icon(
+                                  themeProvider.isDarkMode
+                                      ? Icons.light_mode_rounded
+                                      : Icons.dark_mode_rounded,
+                                  key: ValueKey<bool>(themeProvider.isDarkMode),
+                                  size: 20,
+                                ),
+                              ),
+                              color: themeProvider.isDarkMode
+                                  ? AppColors.accentGreen
+                                  : AppColors.accentPurple,
+                              tooltip: themeProvider.isDarkMode ? 'Açık Tema' : 'Koyu Tema',
+                              onPressed: themeProvider.toggleTheme,
+                            ),
+                          ),
+                        ),
                       // Refresh circular icon button
                       Container(
                         width: 44,
@@ -118,8 +148,9 @@ class _EventListScreenState extends State<EventListScreen> {
                           color: AppColors.surface,
                           shape: BoxShape.circle,
                           border: Border.all(
-                            color: AppColors.border,
+                            color: AppColors.cardBorder,
                           ),
+                          boxShadow: AppColors.cardShadow,
                         ),
                         child: IconButton(
                           icon: const Icon(Icons.refresh_rounded, size: 20),
@@ -257,7 +288,7 @@ class _EventListScreenState extends State<EventListScreen> {
                         '${featuredEvents.length} Etkinlik',
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: AppTypography.labelSmall.copyWith(color: AppColors.accentGreen),
+                        style: AppTypography.labelSmall.copyWith(color: AppColors.accentText),
                       ),
                     ),
                   ],
@@ -374,12 +405,12 @@ class _EventListScreenState extends State<EventListScreen> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const SizedBox(
+            SizedBox(
               width: 20,
               height: 20,
               child: CircularProgressIndicator(
                 strokeWidth: 2.5,
-                color: AppColors.accentGreen,
+                color: AppColors.accentText,
               ),
             ),
             const SizedBox(width: 12),
@@ -423,10 +454,10 @@ class _EventListScreenState extends State<EventListScreen> {
               const SizedBox(width: 8),
               TextButton(
                 onPressed: provider.loadMoreEvents,
-                child: const Text(
+                child: Text(
                   'Tekrar Dene',
                   style: TextStyle(
-                    color: AppColors.accentGreen,
+                    color: AppColors.accentText,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
